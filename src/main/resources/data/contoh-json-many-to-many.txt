@@ -1,0 +1,44 @@
+[
+{
+"id":1,
+"nama":"paul",
+"alamat":"bogor",
+"email":"paul@gmail.com",
+"akses":{
+		"id":1,
+		"nama_akses":"ADMIN"
+		}
+}
+{
+"id":2,
+"nama":"aji",
+"alamat":"jakarta",
+"email":"aji@gmail.com",
+"akses":{
+		"id":2,
+		"nama_akses":"STAFF"
+		}
+}
+
+{
+"id":3,
+"nama":"anton",
+"alamat":"singaparma",
+"email":"anton@gmail.com",
+"akses":{
+		"id":3,
+		"nama_akses":"MANAGER"
+		}
+}
+
+{
+"id":4,
+"nama":"agam",
+"alamat":"Bekasi",
+"email":"agam@gmail.com",
+"akses":{
+		"id":2,
+		"nama_akses":"STAFF"
+		}
+}
+]

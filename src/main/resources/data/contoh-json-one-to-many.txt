@@ -1,0 +1,50 @@
+[
+{
+		"id":1,
+		"nama_akses":"ADMIN",
+		"list_user" : [
+							{
+							"id":1,
+							"nama":"paul",
+							"alamat":"bogor",
+							"email":"paul@gmail.com",
+
+							}
+						]
+		}
+
+{
+		"id":2,
+		"nama_akses":"STAFF",
+		"list_user":[
+						{
+							"id":2,
+							"nama":"aji",
+							"alamat":"jakarta",
+							"email":"aji@gmail.com",
+
+						},
+						{
+							"id":4,
+							"nama":"agam",
+							"alamat":"Bekasi",
+							"email":"agam@gmail.com",
+						}
+					]
+}
+
+
+		{
+			"id":3,
+			"nama_akses":"MANAGER",
+			"list_user" : {
+							"id":3,
+							"nama":"anton",
+							"alamat":"singaparma",
+							"email":"anton@gmail.com",
+
+							}
+		}
+
+
+]
