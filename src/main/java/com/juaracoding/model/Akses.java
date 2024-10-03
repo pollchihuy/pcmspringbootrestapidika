@@ -12,8 +12,6 @@ public class Akses {
 
 //    @JsonProperty("nama_akses")
     private String namaAkses;
-
-
 //    private User user;
 
     public int getId() {

@@ -12,17 +12,24 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(length = 50)
     private String nama;
     @Column(length = 100)
     private String alamat;
+    @Column(length = 50)
     private String email;
+    @Column(length = 16)
     private String noHp;
+    @Column(length = 64)
     private String password;
+    @Column(length = 25)
     private String username;
-
     private LocalDate tanggalLahir;
-    private Date createdAt;
-    private Date updatedAt;
+    @Column(updatable = false)
+    private Date createdAt = new Date();
+
+    @Column(insertable = false)
+    private Date updatedAt=new Date();
     private Boolean isRegis;
     private Boolean isActive;
 

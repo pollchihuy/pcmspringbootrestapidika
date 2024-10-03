@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("api")
 public class CaptureRequestController {
+//    private static final Logger logger = LogManager.getLogger(CaptureRequestController.class);
 
     @PostMapping("/req/{id}/{nama}")
     public ResponseEntity<String> getAllRequest(
@@ -41,11 +42,13 @@ public class CaptureRequestController {
         // Mengambil body (JSON atau plain text)
         String body = null;
         try {
-//            int ix= 1/0;
+            int ix= 1/0;
             body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
         } catch (Exception e) {
             System.out.println("Error Message : "+e.getMessage());
-            LoggingFile.exceptionStringz("CaptureRequestController","getAllRequest"+sb.toString(), e, OtherConfig.getFlagLogging());
+            LoggingFile.exceptionStringz("CaptureRequestController",
+                    "getAllRequest"+sb.toString(),
+                    e, OtherConfig.getFlagLogging());
         }
         sb.append("Body: ").append(body).append("\n");
 //        Exception e = new Exception("SENGAJA ERROR");

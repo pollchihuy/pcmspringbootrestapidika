@@ -1,13 +1,13 @@
 package com.juaracoding.controller;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.juaracoding.dto.response.UserDTO;
+import com.juaracoding.config.OtherConfig;
 import com.juaracoding.dto.validasi.RegisDTO;
 import com.juaracoding.model.User;
 import com.juaracoding.service.UserService;
+import com.juaracoding.util.LoggingFile;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,29 +26,26 @@ public class UserController {
     private Gson gson = new Gson();
 
     @GetMapping("/users/all")
-    public ResponseEntity<Object> findAll() {
+    public ResponseEntity<Object> findAll(HttpServletRequest request) {
 
-        return ResponseEntity.ok(userService.findAll());
+//        return userService.findAll(request);
+        return null;
     }
 
     @GetMapping("/users/{id}")
-    public void findById(
-            HttpServletResponse response,
+    public ResponseEntity<?> findById(
+            HttpServletRequest request,
             @PathVariable(value = "id") Long id) {
-
-        String strResponse = gson.toJson(userService.findById(id));
-        try {
-            response.getWriter().write(strResponse);
-            response.getWriter().flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-//        return ResponseEntity.ok(userService.findById(id));
+//        return userService.findById(id,request);
+        return null;
     }
 
     @PostMapping("/users/test-validation")
     public ResponseEntity<?> testUserDTO(
             @Valid @RequestBody RegisDTO regisDTO) {
+
+        int intZ = 13;
+        LoggingFile.print(OtherConfig.getFlagLogging(),"Masuk Sini"+intZ);
         User user = userService.convertRegisDTOToEntity(regisDTO);
         return ResponseEntity.ok(user);
     }

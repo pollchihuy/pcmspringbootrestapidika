@@ -25,7 +25,7 @@ public class ParentService {
 
 
     @Transactional
-    public String save(ParentEntity parentEntity,Contoh contoh,User user){
+    public String save(ParentEntity parentEntity, Contoh contoh, User user){
         try{
             parentRepo.save(parentEntity);
             int intX = 1/0;

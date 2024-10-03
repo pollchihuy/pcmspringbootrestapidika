@@ -5,12 +5,17 @@ import com.juaracoding.dto.response.UserDTO;
 import com.juaracoding.dto.validasi.RegisDTO;
 import com.juaracoding.model.User;
 import com.juaracoding.repo.UserRepo;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.*;
 
 
@@ -33,75 +38,42 @@ public class UserService implements IService<User> {
     }
 
     @Override
-    public ResponseEntity<Object> save(User user) {//001-010
+    public ResponseEntity<Object> save(User user, HttpServletRequest request) {//001-010
 //        userRepo.save(user);
+//        userRepo.findAll();
+//        userRepo.findById();
+
         return null;
     }
 
     @Override
-    public ResponseEntity<Object> delete(Long id, User user) {//011-020
+    public ResponseEntity<Object> delete(Long id, HttpServletRequest request) {//011-020
         return null;
     }
 
     @Override
-    public ResponseEntity<Object> findAll() {
+    public ResponseEntity<Object> findAll(Pageable pageable, HttpServletRequest request) {
         Map<String,Object> m = new HashMap<>();
 //        m.put("data", getUserDTO(userRepo.findAll()));
         m.put("data", getUserDTO(userRepo.findAll(),null));
 //        m.put("data",userRepo.findAll());
-
         return new ResponseEntity<>(m,HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<Object> findById(Long id) {
+    public ResponseEntity<Object> findById(Long id, HttpServletRequest request) {
         Map<String,Object> m = new HashMap<>();
 //        m.put("data", userRepo.findById(id));
         m.put("data", getUserDTO(userRepo.findById(id),null));
+        User u = new User();
+//        u.setCreatedAt(new Date());
         return new ResponseEntity<>(m,HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<Object> update(Long id, User user) {
+    public ResponseEntity<Object> update(Long id, User user, HttpServletRequest request) {
         return null;
     }
-
-//    public List<UserDTO> getUserDTO(Iterable<User> user) {
-//        List<User> target = new ArrayList<>();
-//        user.forEach(target::add);
-//
-//        List<UserDTO> userDTOS = new ArrayList<>();
-//        for(User u : user){
-//            UserDTO userDTO = new UserDTO();
-//            userDTO.setId(u.getId());
-//            userDTO.setUsername(u.getUsername());
-////            userDTO.setNoHp(u.getNoHp());
-//            userDTO.setEmail(u.getEmail());
-//            userDTO.setAlamat(u.getAlamat());
-//            userDTO.setNama(u.getNama());
-//            userDTO.setTanggalLahir(u.getTanggalLahir());
-//            userDTO.setUmur(u.getUmur());
-//            userDTOS.add(userDTO);
-//        }
-//        return userDTOS;
-//    }
-//
-//    public UserDTO getUserDTO(Optional<User> user) {
-//        UserDTO userDTO = new UserDTO();
-//        if(user.isPresent()){
-//                User u = user.get();
-//                userDTO.setId(u.getId());
-//                userDTO.setUsername(u.getUsername());
-////                userDTO.setNoHp(u.getNoHp());
-////                userDTO.setEmail(u.getEmail());
-//                userDTO.setAlamat(u.getAlamat());
-//                userDTO.setNama(u.getNama());
-//
-//                userDTO.setTanggalLahir(u.getTanggalLahir());
-//                userDTO.setUmur(u.getUmur());
-//        }
-//        return userDTO;
-//    }
 
     public UserDTO getUserDTO(Optional<User> user,String strNull) {
         if(user.isPresent()){
@@ -133,7 +105,19 @@ public class UserService implements IService<User> {
         return modelMapper.map(regisDTO,User.class);
     }
 
+    @Override
+    public ResponseEntity<Object> findByParam(String columnName, String value,HttpServletRequest request) {
+        return null;
+    }
 
+    @Override
+    public ResponseEntity<Object> uploadDataCSV(MultipartFile multipartFile, HttpServletRequest request) {
+        return null;
+    }
 
+    @Override
+    public void downloadReportExcel(Pageable pageable, String filterBy, String value, HttpServletRequest request, HttpServletResponse response) {
+
+    }
 
 }

@@ -40,7 +40,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		strExceptionArr[0] = "GlobalExceptionHandler";
 	}
 
-
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
 																  HttpHeaders headers,
@@ -63,10 +62,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<Object> dataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
-//		strExceptionArr[1] = "dataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) \n"+RequestCapture.allRequest(request);
 		LoggingFile.exceptionStringz(strExceptionArr, ex, OtherConfig.getFlagLogging());
 		return buildResponseEntity(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR,"DATA TIDAK VALID",ex,request.getPathInfo(),"X-02-001"));
 	}
+
 	@ExceptionHandler(UnexpectedRollbackException.class)
 	public ResponseEntity<Object> unexpectedRollbackException(UnexpectedRollbackException ex, HttpServletRequest request) {
 		strExceptionArr[1] = "unexpectedRollbackException(UnexpectedRollbackException ex, HttpServletRequest request) \n"+RequestCapture.allRequest(request);
@@ -79,7 +78,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	@ExceptionHandler(MultipartException.class)
-	public ResponseEntity<Object> MultipartException(MultipartException ex, HttpServletRequest request) {
+	public ResponseEntity<Object> multipartException(MultipartException ex, HttpServletRequest request) {
 		strExceptionArr[1] = "MultipartException(MultipartException ex, HttpServletRequest request) \n"+RequestCapture.allRequest(request);
 		LoggingFile.exceptionStringz(strExceptionArr, ex, OtherConfig.getFlagLogging());
 		return buildResponseEntity(new ApiError(HttpStatus.UNSUPPORTED_MEDIA_TYPE,"Konten harus Multipart",ex,request.getPathInfo(),"X-04-001"));

@@ -18,7 +18,7 @@ public class RegisDTO {
     @NotNull
     @NotBlank
     @NotEmpty
-    @Pattern(regexp = "^(?=.{1,256})(?=.{1,64}@.{1,255}$)(?:(?![.])[a-zA-Z0-9._%+-]+(?:(?<!\\\\)[.][a-zA-Z0-9-]+)*?)@[a-zA-Z0-9.-]+(?:\\.[a-zA-Z]{2,})+$",
+    @Pattern(regexp = "^(?=.{1,256})(?=.{1,64}@.{1,255}$)(?:(?![.])[a-zA-Z0-9._%+-]+(?:(?<!\\\\)[.][a-zA-Z0-9-]+)*?)@[a-zA-Z0-9.-]+(?:\\.[a-zA-Z]{2,50})+$",
             message = "Format tidak valid contoh : user_name123@sub.domain.com")
     private String email;
 
@@ -30,7 +30,7 @@ public class RegisDTO {
     private String alamat;
 
     @NotNull
-    @NotBlank
+    @NotBlank(message = "NAMA TIDAK BOLEH NULL !!")
     @NotEmpty
     @Pattern(regexp = "^[a-zA-Z\\s\\.,]{3,50}$",
             message = "Format Nama Tidak Valid , contoh : Paul Christian")
@@ -54,8 +54,8 @@ public class RegisDTO {
     @NotNull
     @NotBlank
     @NotEmpty
-    @Pattern(regexp = "^([a-z0-9]{15,25})$",
-            message = "Format Huruf kecil dan numeric saja, contoh : paulchihuy123")
+    @Pattern(regexp = "^([a-z0-9]{8,25})$",
+            message = "Format Huruf kecil dan numeric saja min 8 max 25 karakter, contoh : paulchihuy123")
     private String username;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
