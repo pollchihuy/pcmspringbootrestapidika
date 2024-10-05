@@ -24,6 +24,13 @@
     </parent>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http44</artifactId>
+            <version>1.38.0</version>
+        </dependency>
+
         <!--  Untuk ExceL -->
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -40,6 +47,7 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>5.1.1</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.testng/testng -->

@@ -1,5 +1,7 @@
 package com.juaracoding.config;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.juaracoding.security.Crypto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,5 +33,13 @@ public class MainConfig {
     @Bean
     public ModelMapper getModelMapper() {
         return new ModelMapper();
+    }
+
+    @Bean
+    public Cloudinary cloudinary(){
+        return new Cloudinary(ObjectUtils.asMap(
+                "cloud_name",CloudinaryConfig.getCloudName(),
+                "api_key",CloudinaryConfig.getApiKey(),
+                "api_secret",CloudinaryConfig.getApiSecret()));
     }
 }
