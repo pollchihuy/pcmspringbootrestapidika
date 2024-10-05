@@ -5,6 +5,8 @@ import com.juaracoding.dto.response.UserDTO;
 import com.juaracoding.dto.validasi.RegisDTO;
 import com.juaracoding.model.User;
 import com.juaracoding.repo.UserRepo;
+import com.juaracoding.util.GlobalFunction;
+import com.juaracoding.util.Patcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.modelmapper.ModelMapper;
@@ -15,22 +17,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.*;
 
 
 /**
- * inventory platform code = INV
- * code module user = 07
- * fe -> 001 - 010
- * fv
- * 0107FV005
+ * inventory platform code = 001
+ * code module user = 004
  */
 @Service
 public class UserService implements IService<User> {
 
     @Autowired
     UserRepo userRepo;
+
+    @Autowired
+    Patcher patcher;
 
     private ModelMapper modelMapper ;
     public UserService() {
@@ -39,10 +40,6 @@ public class UserService implements IService<User> {
 
     @Override
     public ResponseEntity<Object> save(User user, HttpServletRequest request) {//001-010
-//        userRepo.save(user);
-//        userRepo.findAll();
-//        userRepo.findById();
-
         return null;
     }
 
@@ -93,7 +90,6 @@ public class UserService implements IService<User> {
             List<UserDTO> u = modelMapper.map(target,new TypeToken<List<UserDTO>>(){}.getType());
             return u;
         }
-
         return new ArrayList<>();
     }
 
@@ -106,18 +102,35 @@ public class UserService implements IService<User> {
     }
 
     @Override
-    public ResponseEntity<Object> findByParam(String columnName, String value,HttpServletRequest request) {
+    public ResponseEntity<Object> findByParam(Pageable pageable, String columnName, String value,HttpServletRequest request) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Object> uploadDataCSV(MultipartFile multipartFile, HttpServletRequest request) {
+    public ResponseEntity<Object> uploadDataExcel(MultipartFile multipartFile, HttpServletRequest request) {
         return null;
     }
 
     @Override
-    public void downloadReportExcel(Pageable pageable, String filterBy, String value, HttpServletRequest request, HttpServletResponse response) {
+    public void downloadReportExcel(String filterBy, String value, HttpServletRequest request, HttpServletResponse response) {
 
     }
 
+    public ResponseEntity<Object> updatePatch(User user, HttpServletRequest request) {
+        // pertama - tama harus autowired object Patcher
+        // kedua - dua cari user berdasarkan id
+        // ketiga - tiga validasi user tersebut apakah ada atau tidak
+        // ke empat-empat panggil fungsi khusus handling patcher untuk class user
+        Optional<User> optionalUser = userRepo.findById(user.getId());
+        if(!optionalUser.isPresent()) {
+            return GlobalFunction.dataTidakDitemukan(request);
+        }
+        User nextUser = optionalUser.get();
+        try {
+            patcher.userPatcher(nextUser,user);
+        } catch (IllegalAccessException e) {
+            return GlobalFunction.dataGagalDiubah("FE001081",request);
+        }
+        return GlobalFunction.dataBerhasilDiubah(request);
+    }
 }

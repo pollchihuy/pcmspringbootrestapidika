@@ -15,7 +15,7 @@ public class OtherConfig {
 //    private static String maxCounterToken;
 //    private static String osSplitting;//penambahan 20-12-2023
 
-//    private static String howToDownloadReport;//penambahan 07-01-2024
+    private static String howToDownloadReport;//penambahan 07-01-2024
 //    private static String pathSeparatorReport;
 //    /** baiknya yg berhubungan dengan directory / path dijadikan environment variables*/
 //    private static String pathGeneratePDF;
@@ -60,15 +60,15 @@ public class OtherConfig {
 //        OtherConfig.pathGeneratePDF = pathGeneratePDF;
 //    }
 //
-//    public static String getHowToDownloadReport() {
-//        return howToDownloadReport;
-//    }
-//
-//
-//    @Value("${how.to.download.report}")
-//    private void setHowToDownloadReport(String howToDownloadReport) {
-//        OtherConfig.howToDownloadReport = howToDownloadReport;
-//    }
+    public static String getHowToDownloadReport() {
+        return howToDownloadReport;
+    }
+
+
+    @Value("${how.to.download.report}")
+    private void setHowToDownloadReport(String howToDownloadReport) {
+        OtherConfig.howToDownloadReport = howToDownloadReport;
+    }
 //
 //    public static String getOsSplitting() {
 //        return osSplitting;

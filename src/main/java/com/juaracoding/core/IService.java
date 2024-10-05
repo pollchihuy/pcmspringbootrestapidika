@@ -12,7 +12,7 @@ public interface IService<T> {
     public ResponseEntity<Object> delete(Long id, HttpServletRequest request);//021-030
     public ResponseEntity<Object> findAll(Pageable pageable, HttpServletRequest request);//031-040
     public ResponseEntity<Object> findById(Long id, HttpServletRequest request);//041-050
-    public ResponseEntity<Object> findByParam(String columnName, String value, HttpServletRequest request);//051-060
-    public ResponseEntity<Object> uploadDataCSV(MultipartFile multipartFile, HttpServletRequest request);//061-070
-    public void downloadReportExcel(Pageable pageable, String filterBy, String value, HttpServletRequest request, HttpServletResponse response);//071-080
+    public ResponseEntity<Object> findByParam(Pageable pageable,String columnName, String value, HttpServletRequest request);//051-060
+    public ResponseEntity<Object> uploadDataExcel(MultipartFile multipartFile, HttpServletRequest request);//061-070
+    public void downloadReportExcel(String filterBy, String value, HttpServletRequest request, HttpServletResponse response);//071-080
 }

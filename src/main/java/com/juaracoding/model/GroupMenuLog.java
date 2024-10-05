@@ -8,7 +8,6 @@ import java.util.Date;
 @Entity
 @Table(name = "log_group_menu")
 public class GroupMenuLog {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;

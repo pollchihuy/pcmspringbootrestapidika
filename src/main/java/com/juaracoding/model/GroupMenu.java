@@ -4,12 +4,12 @@ package com.juaracoding.model;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import java.util.Date;
 
 @Entity
 @Table(name = "mst_gorup_menu")
 public class GroupMenu {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

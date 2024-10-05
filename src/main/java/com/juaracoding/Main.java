@@ -1,14 +1,8 @@
 package com.juaracoding;
 
 
-import com.juaracoding.model.GroupMenu;
-import com.juaracoding.model.User;
-import com.juaracoding.repo.GroupMenuRepo;
-import com.juaracoding.repo.UserRepo;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 import java.time.LocalDate;
 

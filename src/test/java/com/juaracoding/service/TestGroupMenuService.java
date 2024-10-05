@@ -2,9 +2,11 @@ package com.juaracoding.service;
 
 import com.juaracoding.model.GroupMenu;
 import com.juaracoding.utils.DataGenerator;
-import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
@@ -22,10 +24,6 @@ public class TestGroupMenuService extends AbstractTestNGSpringContextTests{
     private MockHttpServletRequest request;
     private ResponseEntity<Object> response = null;
 
-//    public TestGroupMenuService() {
-////        MockitoAnnotations.initMocks(this);
-//        this.groupMenuService = new GroupMenuService(groupMenuRepo);
-//    }
 
     @BeforeTest
     public void initTest(){
@@ -45,30 +43,39 @@ public class TestGroupMenuService extends AbstractTestNGSpringContextTests{
             System.out.println("ERROR : " +e.getMessage());
         }
         responseCode = response.getStatusCodeValue();
-//        Gson gson = new Gson();
-//        String strX = gson.toJson(response.getBody());
-//        System.out.println("STRX VALUE : "+strX.toString());
         System.out.println(responseCode);
         Assert.assertNotNull(response,"GAGAL DISIMPAN ");
     }
 
     @Test
     public void findById(){
-        GroupMenu groupMenu = new GroupMenu();
         int responseCode = 0;
         try{
-            response = groupMenuService.findById(6L,request);
+            response = groupMenuService.findById(24L,request);
         }catch (Exception e){
             System.out.println("ERROR : " +e.getMessage());
         }
+        System.out.println(response.getBody());
         responseCode = response.getStatusCodeValue();
         System.out.println(responseCode);
+        Assert.assertEquals(200,responseCode,"TIDAK DITEMUKAN ");
+    }
+
+    @Test
+    public void findAll(){
+        Pageable pageable =  PageRequest.of(0,2, Sort.by("id").descending());
+        try{
+            response = groupMenuService.findAll(pageable,request);
+        }catch (Exception e){
+            System.out.println("ERROR : " +e.getMessage());
+        }
+        System.out.println(response.getBody());
+        int responseCode = response.getStatusCodeValue();
         Assert.assertEquals(200,responseCode,"TIDAK DITEMUKAN ");
     }
 
     @AfterTest
     public void tearDown() {
         System.out.println("FINISH");
-//        Mockito.reset(groupMenuRepo);
     }
 }

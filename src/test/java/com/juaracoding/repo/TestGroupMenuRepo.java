@@ -1,14 +1,10 @@
 package com.juaracoding.repo;
 
-
 import com.juaracoding.model.GroupMenu;
 import com.juaracoding.utils.DataGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -16,15 +12,10 @@ import org.testng.annotations.Test;
 import java.util.Optional;
 import java.util.Random;
 
-@DataJpaTest(showSql = false)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-/** kalau gak dipakai , semisal test berhasil tapi datanya gak dimasukin ke table */
-@Transactional(propagation = Propagation.NOT_SUPPORTED)
+@SpringBootTest
 public class TestGroupMenuRepo extends AbstractTestNGSpringContextTests {
-
     @Autowired
     private GroupMenuRepo groupMenuRepo;
-
     private DataGenerator dataGenerator ;
     private Random rand;
 
@@ -34,7 +25,7 @@ public class TestGroupMenuRepo extends AbstractTestNGSpringContextTests {
         dataGenerator = new DataGenerator();
     }
 
-    @Test
+    @Test(priority = 0)
     public void save(){
         GroupMenu groupMenu = new GroupMenu();
         groupMenu.setName(dataGenerator.dataNamaTim());
@@ -48,7 +39,7 @@ public class TestGroupMenuRepo extends AbstractTestNGSpringContextTests {
         Assert.assertNotNull(groupMenu.getId());
     }
 
-    @Test
+    @Test(priority = 1)
     public void update(){
         Optional<GroupMenu> opNext = groupMenuRepo.findTop1By();
         if(!opNext.isPresent()){
@@ -68,7 +59,7 @@ public class TestGroupMenuRepo extends AbstractTestNGSpringContextTests {
         Assert.assertNotNull(groupMenu.getId());
     }
 
-    @Test
+    @Test(priority = 2)
     public void delete(){
         Optional<GroupMenu> opNext = groupMenuRepo.findTop1By();
         if(!opNext.isPresent()){
