@@ -32,6 +32,7 @@ import java.util.*;
 @Service
 public class GroupMenuService implements IService<GroupMenu> {
 
+    @Autowired
     private GroupMenuRepo groupMenuRepo;
 
     @Autowired
@@ -40,10 +41,7 @@ public class GroupMenuService implements IService<GroupMenu> {
     @Autowired
     private TransformToDTO transformToDTO;
     private StringBuilder sBuild = new StringBuilder();
-    @Autowired
-    public GroupMenuService(GroupMenuRepo groupMenuRepo) {
-        this.groupMenuRepo = groupMenuRepo;
-    }
+
 
     @Override
     public ResponseEntity<Object> save(GroupMenu groupMenu, HttpServletRequest request) {

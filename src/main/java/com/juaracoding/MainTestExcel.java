@@ -5,7 +5,7 @@ import com.juaracoding.util.ExcelReader;
 import java.util.List;
 import java.util.Map;
 
-public class MainExcel {
+public class MainTestExcel {
 
     public static void main(String[] args) {
         List<Map<String,String>> list = new ExcelReader(System.getProperty("user.dir")+"\\data\\contoh-excel-workbook-YANG-BENAR.xlsx","Sheet1").getDataMap();
