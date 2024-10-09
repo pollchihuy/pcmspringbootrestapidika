@@ -1,136 +1,248 @@
 package com.juaracoding.service;
 
+import com.juaracoding.config.OtherConfig;
 import com.juaracoding.core.IService;
-import com.juaracoding.dto.response.UserDTO;
 import com.juaracoding.dto.validasi.RegisDTO;
+import com.juaracoding.dto.validasi.ValUserDTO;
+import com.juaracoding.model.User;
 import com.juaracoding.model.User;
 import com.juaracoding.repo.UserRepo;
-import com.juaracoding.util.GlobalFunction;
-import com.juaracoding.util.Patcher;
+import com.juaracoding.util.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
 /**
- * inventory platform code = 001
- * code module user = 004
+ *  Platform Code : 002
+ *  Modul Code : 004
+ *  FV -> Failed Validation
+ *  FE -> Failed Error
  */
 @Service
 public class UserService implements IService<User> {
 
     @Autowired
-    UserRepo userRepo;
+    private UserRepo userRepo;
 
     @Autowired
-    Patcher patcher;
-
     private ModelMapper modelMapper ;
-    public UserService() {
-        modelMapper = new ModelMapper();
+
+    @Autowired
+    private TransformToDTO transformToDTO;
+    private StringBuilder sBuild = new StringBuilder();
+
+
+    @Override
+    public ResponseEntity<Object> save(User user, HttpServletRequest request) {
+
+        if(user==null){
+            return GlobalFunction.validasiGagal("OBJECT NULL","FV002002002",request);
+        }
+
+        try {
+            userRepo.save(user);
+        }catch (Exception e){
+            LoggingFile.exceptionStringz("UserService","save",e,OtherConfig.getFlagLogging());
+            return GlobalFunction.dataGagalDisimpan("FE002002002",request);
+        }
+
+        return GlobalFunction.dataBerhasilDisimpan(request);
+    }
+
+    // localhost:8080/api/group-user/12
+
+    @Override
+    @Transactional
+    public ResponseEntity<Object> update(Long id, User user, HttpServletRequest request) {
+       Optional<User> opUser =  userRepo.findById(id);
+       if(!opUser.isPresent()){
+           return GlobalFunction.dataTidakDitemukan(request);
+       }
+       try {
+           User userDB = opUser.get();
+           userDB.setAkses(user.getAkses());
+           userDB.setNamaLengkap(user.getNamaLengkap());
+           userDB.setTanggalLahir(user.getTanggalLahir());
+           userDB.setNoHp(user.getNoHp());
+           userDB.setEmail(user.getEmail());
+           userRepo.save(userDB);
+
+       }catch (Exception e){
+           LoggingFile.exceptionStringz("UserService","update",e,OtherConfig.getFlagLogging());
+           return GlobalFunction.dataGagalDisimpan("FE002002011",request);
+       }
+
+       return GlobalFunction.dataBerhasilDiubah(request);
     }
 
     @Override
-    public ResponseEntity<Object> save(User user, HttpServletRequest request) {//001-010
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Object> delete(Long id, HttpServletRequest request) {//011-020
-        return null;
+    public ResponseEntity<Object> delete(Long id, HttpServletRequest request) {
+        Optional<User> opUser =  userRepo.findById(id);
+        if(!opUser.isPresent()){
+            return GlobalFunction.dataTidakDitemukan(request);
+        }
+        try {
+            userRepo.deleteById(id);
+        }catch (Exception e){
+            LoggingFile.exceptionStringz("UserService","delete",e,OtherConfig.getFlagLogging());
+            return GlobalFunction.dataGagalDisimpan("FE002002021",request);
+        }
+        return GlobalFunction.dataBerhasilDihapus(request);
     }
 
     @Override
     public ResponseEntity<Object> findAll(Pageable pageable, HttpServletRequest request) {
-        Map<String,Object> m = new HashMap<>();
-//        m.put("data", getUserDTO(userRepo.findAll()));
-        m.put("data", getUserDTO(userRepo.findAll(),null));
-//        m.put("data",userRepo.findAll());
-        return new ResponseEntity<>(m,HttpStatus.OK);
+        Page<User> page = null;
+        List<User> list = null;
+        try{
+            page = userRepo.findAll(pageable);
+            list = page.getContent();
+            if(list.isEmpty()){
+                return GlobalFunction.dataTidakDitemukan(request);
+            }
+        }catch (Exception e){
+            return GlobalFunction.tidakDapatDiproses("FE002002031",request);
+        }
+        return transformToDTO.
+                transformObject(new HashMap<>(),
+                        convertToListRespUserDTO(list), page,null,null,null ,request);
     }
 
     @Override
     public ResponseEntity<Object> findById(Long id, HttpServletRequest request) {
-        Map<String,Object> m = new HashMap<>();
-//        m.put("data", userRepo.findById(id));
-        m.put("data", getUserDTO(userRepo.findById(id),null));
-        User u = new User();
-//        u.setCreatedAt(new Date());
-        return new ResponseEntity<>(m,HttpStatus.OK);
-    }
-
-    @Override
-    public ResponseEntity<Object> update(Long id, User user, HttpServletRequest request) {
-        return null;
-    }
-
-    public UserDTO getUserDTO(Optional<User> user,String strNull) {
-        if(user.isPresent()){
-            UserDTO u = modelMapper.map(user.get(),UserDTO.class);
-            return u;
+        Optional<User> opUser= userRepo.findById(id);
+        if(!opUser.isPresent()){
+            return GlobalFunction.dataTidakDitemukan(request);
         }
-        return new UserDTO();
+        return GlobalFunction.dataByIdDitemukan(convertToUserDTO(opUser.get()),request);
     }
 
-    public List<UserDTO> getUserDTO(Iterable<User> user,String strNull) {
-        // ini buat convert dari iterator ke List
-        List<User> target = new ArrayList<>();
-        user.forEach(target::add);
-
-        List<UserDTO> userDTOS = new ArrayList<>();
-        if(!target.isEmpty()){
-            List<UserDTO> u = modelMapper.map(target,new TypeToken<List<UserDTO>>(){}.getType());
-            return u;
+    @Override
+    public ResponseEntity<Object> findByParam(Pageable pageable,String columnName, String value, HttpServletRequest request) {
+        Page<User> page = null;
+        List<User> list = null;
+        try{
+            switch (columnName) {
+                case "nama-lengkap": page = userRepo.findByNamaLengkapContainingIgnoreCase(pageable,value);break;
+                case "alamat": page = userRepo.findByAlamatContainingIgnoreCase(pageable,value);break;
+                case "email": page = userRepo.findByEmailContainingIgnoreCase(pageable,value);break;
+                case "username": page = userRepo.findByEmailContainingIgnoreCase(pageable,value);break;
+                case "no-hp": page = userRepo.findByNoHpContainingIgnoreCase(pageable,value);break;
+                default:page = userRepo.findAll(pageable);break;
+            }
+            list = page.getContent();
+            if(list.isEmpty()){
+                return GlobalFunction.dataTidakDitemukan(request);
+            }
+        }catch (Exception e){
+            return GlobalFunction.tidakDapatDiproses("FE002002051",request);
         }
-        return new ArrayList<>();
-    }
-
-    public User convertUserDTOToEntity(UserDTO userDTO) {
-        return modelMapper.map(userDTO,User.class);
-    }
-
-    public User convertRegisDTOToEntity(RegisDTO regisDTO) {
-        return modelMapper.map(regisDTO,User.class);
+        return transformToDTO.
+                transformObject(new HashMap<>(),
+                        convertToListRespUserDTO(list), page,columnName,value,null ,request);
     }
 
     @Override
-    public ResponseEntity<Object> findByParam(Pageable pageable, String columnName, String value,HttpServletRequest request) {
-        return null;
-    }
-
-    @Override
+    @Transactional
     public ResponseEntity<Object> uploadDataExcel(MultipartFile multipartFile, HttpServletRequest request) {
-        return null;
+        String message = "";
+        if (!ExcelReader.hasWorkBookFormat(multipartFile)) {return GlobalFunction.contentTypeWorkBook("FV002002061",request);}
+
+        try {
+            List lt  = new ExcelReader(multipartFile.getInputStream(),"Sheet1").getDataMap();
+            if(lt.isEmpty()){
+                return GlobalFunction.dataWorkBookKosong("FV002002062",request);
+            }
+            //KARENA DATA LIST MAP<String,String> maka harus di convert menjadi Entity
+            userRepo.saveAll(convertListWorkBookToListEntity(lt,1L));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return GlobalFunction.tidakDapatDiproses("FE002002061",request);
+        }
+        return GlobalFunction.dataBerhasilDisimpan(request);
+    }
+
+    public List<User> convertListWorkBookToListEntity(List<Map<String, String>> workBookData, Long userId){
+        List<User> list = new ArrayList<>();
+        for (int i = 0; i < workBookData.size(); i++) {
+            Map<String, String> map = workBookData.get(i);
+            User user = new User();
+            user.setNamaLengkap(map.get("nama_lengkap"));
+            user.setNoHp(map.get("no_hp"));
+            user.setAlamat(map.get("alamat"));
+            user.setUmur(Integer.parseInt(map.get("umur")));
+            user.setEmail(map.get("email"));
+            list.add(user);
+        }
+        return list;
     }
 
     @Override
     public void downloadReportExcel(String filterBy, String value, HttpServletRequest request, HttpServletResponse response) {
+        List<User> userList = null;
+        switch (filterBy){
+            case "nama-lengkap": userList = userRepo.findByNamaLengkapContainingIgnoreCase(value);break;
+            case "alamat": userList = userRepo.findByAlamatContainingIgnoreCase(value);break;
+            case "email": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
+            case "username": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
+            case "no-hp": userList = userRepo.findByNoHpContainingIgnoreCase(value);break;
+            case "tanggal-lahir": userList = userRepo.findByTanggalLahirContainingIgnoreCase(value);break;
 
+            default:userList = userRepo.findAll();break;
+        }
+        List<com.juaracoding.dto.response.RespUserDTO> listRespUser = convertToListRespUserDTO(userList);
+        if (listRespUser.isEmpty()) {
+            GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
+            return;
+        }
+        sBuild.setLength(0);
+        String headerKey = "Content-Disposition";
+        sBuild.setLength(0);
+
+        String headerValue = sBuild.append(OtherConfig.getHowToDownloadReport()).append("; filename=user_").
+                append( new SimpleDateFormat("dd-MM-yyyy-HH-mm-ss.SSS").format(new Date())).//audit trails lewat nama file nya
+                        append(".xlsx").toString();//buat excel
+        response.setHeader(headerKey, headerValue);
+        response.setContentType("application/octet-stream");
+
+        String [] strHeaderArr = {"ID","NAMA MENU"};
+        String[][] strBody = new String[listRespUser.size()][strHeaderArr.length];
+        String strIdUser = "";// VARIABLE UNTUK MEMFILTER DATA NYA TERLEBIH DAHULU
+        String strNamaUser = "";// VARIABLE UNTUK MEMFILTER DATA NYA TERLEBIH DAHULU
+        for (int i = 0; i < listRespUser.size(); i++) {
+            strIdUser = listRespUser.get(i).getId() == null ? "-" : String.valueOf(listRespUser.get(i).getId());//null handling
+            strNamaUser = listRespUser.get(i).getNama() == null ? "-" : listRespUser.get(i).getNama();//null handling
+            strBody[i][0] = strIdUser;
+            strBody[i][1] = strNamaUser;
+        }
+        new ExcelWriter(strBody, strHeaderArr,"sheet-1", response);
     }
 
-    public ResponseEntity<Object> updatePatch(User user, HttpServletRequest request) {
-        // pertama - tama harus autowired object Patcher
-        // kedua - dua cari user berdasarkan id
-        // ketiga - tiga validasi user tersebut apakah ada atau tidak
-        // ke empat-empat panggil fungsi khusus handling patcher untuk class user
-        Optional<User> optionalUser = userRepo.findById(user.getId());
-        if(!optionalUser.isPresent()) {
-            return GlobalFunction.dataTidakDitemukan(request);
-        }
-        User nextUser = optionalUser.get();
-        try {
-            patcher.userPatcher(nextUser,user);
-        } catch (IllegalAccessException e) {
-            return GlobalFunction.dataGagalDiubah("FE001081",request);
-        }
-        return GlobalFunction.dataBerhasilDiubah(request);
+    public com.juaracoding.dto.response.RespUserDTO convertToUserDTO(User groupUser){
+        return modelMapper.map(groupUser, com.juaracoding.dto.response.RespUserDTO.class);
+    }
+
+    public User convertToEntity(ValUserDTO groupUserDTO){
+        return modelMapper.map(groupUserDTO, User.class);
+    }
+
+    public User convertToEntity(RegisDTO regisDTO){
+        return modelMapper.map(regisDTO, User.class);
+    }
+
+    public List<com.juaracoding.dto.response.RespUserDTO> convertToListRespUserDTO(List<User> groupUserList){
+        return modelMapper.map(groupUserList,new TypeToken<List<com.juaracoding.dto.response.RespUserDTO>>(){}.getType());
     }
 }

@@ -1,7 +1,7 @@
 package com.juaracoding.dto.response;
 
 import java.time.LocalDate;
-public class UserDTO {
+public class RespUserDTO {
 
     private Long id;
     private String nama;
@@ -10,17 +10,6 @@ public class UserDTO {
     private String username;
     private LocalDate tanggalLahir;
     private Integer umur;
-//    private String kolomTambah;
-//    private String kolomTambah2;
-//    private String noHp;
-//
-//    public String getNoHp() {
-//        return noHp;
-//    }
-//
-//    public void setNoHp(String noHp) {
-//        this.noHp = noHp;
-//    }
 
     public Long getId() {
         return id;

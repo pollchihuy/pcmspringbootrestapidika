@@ -4,6 +4,7 @@ import com.juaracoding.config.OtherConfig;
 import com.juaracoding.core.IService;
 import com.juaracoding.dto.response.RespGroupMenuDTO;
 import com.juaracoding.dto.validasi.ValGroupMenuDTO;
+import com.juaracoding.handler.ResponseHandler;
 import com.juaracoding.model.GroupMenu;
 import com.juaracoding.repo.GroupMenuRepo;
 import com.juaracoding.util.*;
@@ -15,11 +16,13 @@ import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 
@@ -55,13 +58,15 @@ public class GroupMenuService implements IService<GroupMenu> {
             LoggingFile.exceptionStringz("GroupMenuService","save",e,OtherConfig.getFlagLogging());
             return GlobalFunction.dataGagalDisimpan("FE001001001",request);
         }
+
         return GlobalFunction.dataBerhasilDisimpan(request);
     }
+
+    // localhost:8080/api/group-menu/12
 
     @Override
     @Transactional
     public ResponseEntity<Object> update(Long id, GroupMenu groupMenu, HttpServletRequest request) {
-
        Optional<GroupMenu> opGroupMenu =  groupMenuRepo.findById(id);
        if(!opGroupMenu.isPresent()){
            return GlobalFunction.dataTidakDitemukan(request);
@@ -109,6 +114,12 @@ public class GroupMenuService implements IService<GroupMenu> {
         return transformToDTO.
                 transformObject(new HashMap<>(),
                         convertToListRespGroupMenuDTO(list), page,null,null,null ,request);
+//        return new ResponseHandler().
+//                generateResponse("PERMINTAAN DATA BERHASIL",
+//                        HttpStatus.OK,
+//                        page,
+//                        null,
+//                        request);
     }
 
     @Override
@@ -153,7 +164,7 @@ public class GroupMenuService implements IService<GroupMenu> {
                 return GlobalFunction.dataWorkBookKosong("FV001001062",request);
             }
             //KARENA DATA LIST MAP<String,String> maka harus di convert menjadi Entity
-            groupMenuRepo.saveAll(convertListCsvToListEntity(lt,1L));
+            groupMenuRepo.saveAll(convertListWorkBookToListEntity(lt,1L));
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return GlobalFunction.tidakDapatDiproses("FE001001061",request);
@@ -161,12 +172,12 @@ public class GroupMenuService implements IService<GroupMenu> {
         return GlobalFunction.dataBerhasilDisimpan(request);
     }
 
-    public List<GroupMenu> convertListCsvToListEntity(List<Map<String, String>> workBookData,Long userId){
+    public List<GroupMenu> convertListWorkBookToListEntity(List<Map<String, String>> workBookData, Long userId){
         List<GroupMenu> list = new ArrayList<>();
         for (int i = 0; i < workBookData.size(); i++) {
             Map<String, String> map = workBookData.get(i);
             GroupMenu groupMenu = new GroupMenu();
-            groupMenu.setName(map.get("name"));
+            groupMenu.setName(map.get("nama"));
             groupMenu.setCreatedBy(userId);
             list.add(groupMenu);
         }
@@ -197,6 +208,7 @@ public class GroupMenuService implements IService<GroupMenu> {
         response.setContentType("application/octet-stream");
 
         String [] strHeaderArr = {"ID","NAMA GROUP MENU"};
+//        String [] strHeaderArr = {"ID","NAMA GROUP MENU","ALAMAT","EMAIL","TOKEN"};
         String[][] strBody = new String[listRespGroupMenu.size()][strHeaderArr.length];
         String strIdGroup = "";// VARIABLE UNTUK MEMFILTER DATA NYA TERLEBIH DAHULU
         String strNamaGroup = "";// VARIABLE UNTUK MEMFILTER DATA NYA TERLEBIH DAHULU

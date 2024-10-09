@@ -42,7 +42,6 @@ public class PanggilController {
 //        ContohConfig.getFlagContoh()
         System.out.println(user.getAlamat());
         System.out.println(user.getEmail());
-        System.out.println(user.getNama());
 //        System.out.println(user.getAkses().getId());
 //        System.out.println(user.getAkses().getNamaAkses());
         return user.getAlamat();
@@ -64,7 +63,6 @@ public class PanggilController {
         System.out.println("===================");
         System.out.println(user.getAlamat());
         System.out.println(user.getEmail());
-        System.out.println(user.getNama());
 //        System.out.println(user.getAkses().getId());
 //        System.out.println(user.getAkses().getNamaAkses());
         System.out.println("===================");

@@ -12,6 +12,16 @@ import java.io.IOException;
 
 public class GlobalFunction {
 
+    public static ResponseEntity<Object> customDataDitemukan(String message, Object object, HttpServletRequest request){
+        return new ResponseHandler().generateResponse(
+                message,
+                HttpStatus.OK,
+                object,
+                null,
+                request
+        );
+    }
+
     public static ResponseEntity<Object> dataGagalDisimpan(String errorCode, HttpServletRequest request){
         return new ResponseHandler().generateResponse(
                 "DATA GAGAL DISIMPAN",
@@ -129,6 +139,16 @@ public class GlobalFunction {
                 HttpStatus.OK,
                 null,
                 null,
+                request
+        );
+    }
+
+    public static ResponseEntity<Object> customReponse(String errorCode,String message,HttpServletRequest request){
+        return new ResponseHandler().generateResponse(
+                message,
+                HttpStatus.BAD_REQUEST,
+                null,
+                errorCode,
                 request
         );
     }

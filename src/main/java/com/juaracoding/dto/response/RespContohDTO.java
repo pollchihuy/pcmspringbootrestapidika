@@ -1,22 +1,10 @@
-package com.juaracoding.model;
-
-import jakarta.persistence.*;
+package com.juaracoding.dto.response;
 
 import java.time.LocalDate;
 
-@Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"namaContoh","deskripsiContoh","contohDouble"},name = "uhuy"),
-indexes =
-        {
-                @Index(name = "idx_contoh_char",columnList = "contohChar"),
-                @Index(name = "idx_contoh_short",columnList = "contohShort")
-        })
-public class Contoh {
+public class RespContohDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Short id;
-    /** WAJIB DIRUBAH */
     private String namaContoh;
     private String deskripsiContoh;
     private Double contohDouble;

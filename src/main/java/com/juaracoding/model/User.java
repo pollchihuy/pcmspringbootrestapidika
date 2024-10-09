@@ -1,104 +1,125 @@
 package com.juaracoding.model;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Date;
+import java.util.*;
 
-/** ANOTASI JPA */
 @Entity
-public class User {
+@Table(name = "mst_user")
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(length = 50)
-    private String nama;
-    @Column(length = 100)
-    private String alamat;
-    @Column(length = 50)
-    private String email;
-    @Column(length = 16)
-    private String noHp;
-    @Column(length = 64)
-    private String password;
-    @Column(length = 25)
-    private String username;
-    private LocalDate tanggalLahir;
-    @Column(updatable = false)
-    private Date createdAt = new Date();
 
-    @Column(insertable = false)
-    private Date updatedAt=new Date();
-    private Boolean isRegis;
-    private Boolean isActive;
+    @Column(unique = true,length = 50)
+    private String email;
+
+    @Column(unique = true)
+    private String noHp;
+
+    @Column(unique = true,length = 20)
+    private String username;
+
+    @Column(length = 64,unique = true)
+    private String password;
+
+    @Transient
+    private String passwordBaru;
+
+    @Column(length = 50, nullable = false)
+    private String namaLengkap;
+
+    private LocalDate tanggalLahir;
+
+    private String alamat;
+
+    /** penanda apakah sudah melakukan konfirmasi token registrasi atau belum */
+    private Boolean isRegistered = false;
 
     @Transient
     private Integer umur;
 
-    public String getNoHp() {
-        return noHp;
+    @Column(length = 128)
+    private String token;
+
+    @ManyToOne
+    @JoinColumn(name = "id_akses",foreignKey = @ForeignKey(name = "fk_to_akses"))
+    private Akses akses;
+
+    public Long getId() {
+        return id;
     }
 
-    public void setNoHp(String noHp) {
-        this.noHp = noHp;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Integer getUmur() {
-        return Period.between(tanggalLahir,
-                LocalDate.now()).getYears();
+    public String getPasswordBaru() {
+        return passwordBaru;
     }
 
-    public void setUmur(Integer umur) {
-        this.umur = umur;
+    public void setPasswordBaru(String passwordBaru) {
+        this.passwordBaru = passwordBaru;
     }
 
-    public LocalDate getTanggalLahir() {
-        return tanggalLahir;
+    public Akses getAkses() {
+        return akses;
     }
 
-    public void setTanggalLahir(LocalDate tanggalLahir) {
-        this.tanggalLahir = tanggalLahir;
+    public void setAkses(Akses akses) {
+        this.akses = akses;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
+    public Boolean getRegistered() {
+        return isRegistered;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setRegistered(Boolean registered) {
+        isRegistered = registered;
     }
 
-    public Date getUpdatedAt() {
-        return updatedAt;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        List<Menu> lt = this.akses.getMenuList();
+        Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
+        for (Menu menu : lt) {
+            grantedAuthorities.add(new SimpleGrantedAuthority(menu.getNama()));
+        }
+        return grantedAuthorities;
+//        return List.of();
     }
 
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
     }
 
-    public Boolean getRegis() {
-        return isRegis;
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
     }
 
-    public void setRegis(Boolean regis) {
-        isRegis = regis;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
     }
 
-    public Boolean getActive() {
-        return isActive;
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
     }
 
-    public void setActive(Boolean active) {
-        isActive = active;
+    public String getToken() {
+        return token;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getUsername() {
@@ -109,28 +130,25 @@ public class User {
         this.username = username;
     }
 
-    public Long getId() {
-        return id;
+    public String getPassword() {
+        return password;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public String getNama() {
-        return nama;
+    /**
+     * Data analytic, kolom tidak terbentuk karena informasi ini dynamic
+     * jadi proses kalkulasi ada disini !!
+     */
+    public Integer getUmur() {
+        return Period.
+                between(this.tanggalLahir,LocalDate.now())
+                .getYears();
     }
-
-    public void setNama(String nama) {
-        this.nama = nama;
-    }
-
-    public String getAlamat() {
-        return alamat;
-    }
-
-    public void setAlamat(String alamat) {
-        this.alamat = alamat;
+    public void setUmur(Integer umur) {
+        this.umur = umur;
     }
 
     public String getEmail() {
@@ -141,21 +159,35 @@ public class User {
         this.email = email;
     }
 
-    //    public String getEmail() {
-//        return email;
-//    }
-//
-//    public void setEmail(String email) {
-//        this.email = email;
-//    }
+    public String getNoHp() {
+        return noHp;
+    }
 
-//    public Akses getAkses() {
-//        return akses;
-//    }
-//
-//    public void setAkses(Akses akses) {
-//        this.akses = akses;
-//    }
+    public void setNoHp(String noHp) {
+        this.noHp = noHp;
+    }
 
+    public String getNamaLengkap() {
+        return namaLengkap;
+    }
 
+    public void setNamaLengkap(String namaLengkap) {
+        this.namaLengkap = namaLengkap;
+    }
+
+    public LocalDate getTanggalLahir() {
+        return tanggalLahir;
+    }
+
+    public void setTanggalLahir(LocalDate tanggalLahir) {
+        this.tanggalLahir = tanggalLahir;
+    }
+
+    public String getAlamat() {
+        return alamat;
+    }
+
+    public void setAlamat(String alamat) {
+        this.alamat = alamat;
+    }
 }

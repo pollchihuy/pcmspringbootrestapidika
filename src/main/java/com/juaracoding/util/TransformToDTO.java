@@ -34,6 +34,7 @@ public class TransformToDTO {
         sort   = sortBy.equals("UNSORTED")?"asc":page.getSort().toString().split(":")[1];
         mapz.put("content",ls);
         mapz.put("total_items",page.getTotalElements());
+        mapz.put("page_number",page.getNumber());
         mapz.put("total_pages",page.getTotalPages());
         mapz.put("sort",sort.trim().toLowerCase());
         mapz.put("number_of_elements",page.getNumberOfElements());

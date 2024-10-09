@@ -1,8 +1,8 @@
 package com.juaracoding.controller;
 
 
-import com.juaracoding.dto.validasi.ValGroupMenuDTO;
-import com.juaracoding.service.GroupMenuService;
+import com.juaracoding.dto.validasi.ValMenuDTO;
+import com.juaracoding.service.MenuService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -11,7 +11,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,11 +18,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/group-menu")
-public class GroupMenuController {
+@RequestMapping("api/menu")
+public class MenuController {
 
     @Autowired
-    private GroupMenuService groupMenuService;
+    private MenuService menuService;
 
     private Map<String,Object> mapSorting = new HashMap<>();
     private final String defaultSortingColumnGroupMenu = "id";
@@ -33,36 +32,33 @@ public class GroupMenuController {
         mapSorting.put("nama","group");
     }
 
-    @PreAuthorize("hasAuthority('GROUP-MENU')")
     @PostMapping("/v1")
-    public ResponseEntity<Object> save(@Valid @RequestBody ValGroupMenuDTO valGroupMenuDTO,
+    public ResponseEntity<Object> save(@Valid @RequestBody ValMenuDTO valMenuDTO,
                                        HttpServletRequest request
     ){
-        return groupMenuService.save(groupMenuService.convertToEntity(valGroupMenuDTO), request);
+        return menuService.save(menuService.convertToEntity(valMenuDTO), request);
     }
 
-    @PreAuthorize("hasAuthority('GROUP-MENU')")
     @PutMapping("/v1/{id}")
     public ResponseEntity<Object> update(
                                         @PathVariable Long id,
-                                        @Valid @RequestBody ValGroupMenuDTO valGroupMenuDTO,
+                                        @Valid @RequestBody ValMenuDTO valMenuDTO,
                                         HttpServletRequest request
     ){
-        return groupMenuService.update(id,groupMenuService.convertToEntity(valGroupMenuDTO), request);
+        return menuService.update(id, menuService.convertToEntity(valMenuDTO), request);
     }
 
-    @PreAuthorize("hasAuthority('cumi')")
     @DeleteMapping("/v1/{id}")
     public ResponseEntity<Object> delete(
             @PathVariable Long id,
             HttpServletRequest request
     ){
-        return groupMenuService.delete(id, request);
+        return menuService.delete(id, request);
     }
 
     @GetMapping("/v1/{id}")
     public ResponseEntity<Object> findById(@PathVariable(value = "id") Long id,HttpServletRequest request){
-        return groupMenuService.findById(id,request);
+        return menuService.findById(id,request);
     }
 
 
@@ -85,7 +81,7 @@ public class GroupMenuController {
 //        sort.equals("desc")?Sort.by(sortBy).descending():Sort.by(sortBy)
         Pageable pageable =  PageRequest.of(page,size,
                 Sort.by("id"));
-        return groupMenuService.findAll(pageable,request);
+        return menuService.findAll(pageable,request);
     }
 
     @PostMapping("/v1/upload-sheet")
@@ -93,7 +89,7 @@ public class GroupMenuController {
             @RequestParam(value = "xlsx-file") MultipartFile csvFile,
             HttpServletRequest request
     ){
-        return groupMenuService.uploadDataExcel(csvFile,request);
+        return menuService.uploadDataExcel(csvFile,request);
     }
 
     @GetMapping("/v1/download-sheet")
@@ -103,6 +99,6 @@ public class GroupMenuController {
             @RequestParam(value = "col") String kolom,
             @RequestParam(value = "val") String nilai
     ){
-        groupMenuService.downloadReportExcel(kolom, nilai,request,response);
+        menuService.downloadReportExcel(kolom, nilai,request,response);
     }
 }
