@@ -106,4 +106,13 @@ public class UserController {
     ){
         userService.downloadReportExcel(kolom, nilai,request,response);
     }
+    @GetMapping("/v1/download-pdf")
+    public void downloadPDF(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam(value = "col") String kolom,
+            @RequestParam(value = "val") String nilai
+    ){
+        userService.generateToPDF(kolom, nilai,request,response);
+    }
 }

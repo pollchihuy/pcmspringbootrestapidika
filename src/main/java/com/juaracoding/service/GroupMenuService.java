@@ -11,6 +11,7 @@ import com.juaracoding.util.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
+import org.apache.commons.io.FileUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +21,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -43,6 +49,13 @@ public class GroupMenuService implements IService<GroupMenu> {
 
     @Autowired
     private TransformToDTO transformToDTO;
+
+    @Autowired
+    private PdfGenerator pdfGenerator;
+
+    @Autowired
+    private SpringTemplateEngine springTemplateEngine;
+
     private StringBuilder sBuild = new StringBuilder();
 
     @Override
@@ -60,7 +73,6 @@ public class GroupMenuService implements IService<GroupMenu> {
     }
 
     // localhost:8080/api/group-menu/12
-
     @Override
     @Transactional
     public ResponseEntity<Object> update(Long id, GroupMenu groupMenu, HttpServletRequest request) {
@@ -111,12 +123,6 @@ public class GroupMenuService implements IService<GroupMenu> {
         return transformToDTO.
                 transformObject(new HashMap<>(),
                         convertToListRespGroupMenuDTO(list), page,null,null,null ,request);
-//        return new ResponseHandler().
-//                generateResponse("PERMINTAAN DATA BERHASIL",
-//                        HttpStatus.OK,
-//                        page,
-//                        null,
-//                        request);
     }
 
     @Override
@@ -182,9 +188,9 @@ public class GroupMenuService implements IService<GroupMenu> {
     }
 
     @Override
-    public void downloadReportExcel(String filterBy, String value, HttpServletRequest request, HttpServletResponse response) {
+    public void downloadReportExcel(String column, String value, HttpServletRequest request, HttpServletResponse response) {
         List<GroupMenu> groupMenuList = null;
-        switch (filterBy){
+        switch (column){
             case "name": groupMenuList = groupMenuRepo.findByNameContainsIgnoreCase(value);break;
             default:groupMenuList = groupMenuRepo.findAll();break;
         }
@@ -212,17 +218,68 @@ public class GroupMenuService implements IService<GroupMenu> {
         String [] headerArr = new String[intListTampungSebentar];
         String [] loopDataArr = new String[intListTampungSebentar];
         for (int i = 0; i < intListTampungSebentar; i++) {
-            headerArr[i] = listTampungSebentar.get(i);
+            headerArr[i] = GlobalFunction.camelToStandar(String.valueOf(listTampungSebentar.get(i))).toUpperCase();//BIASANYA JUDUL KOLOM DIBUAT HURUF BESAR DENGAN FORMAT STANDARD
             loopDataArr[i] = listTampungSebentar.get(i);
         }
+
         String[][] strBody = new String[listRespGroupMenu.size()][intListTampungSebentar];
         for (int i = 0; i < listRespGroupMenu.size(); i++) {
             map = GlobalFunction.convertClassToObject(listRespGroupMenu.get(i));
             for (int j = 0; j < intListTampungSebentar; j++) {
-                strBody[i][j] = (String) map.get(loopDataArr[j]);
+                strBody[i][j] = String.valueOf(map.get(loopDataArr[j]));
             }
         }
         new ExcelWriter(strBody, headerArr,"sheet-1", response);
+    }
+
+    public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
+        List<GroupMenu> groupMenuList = null;
+        switch (column){
+            case "name": groupMenuList = groupMenuRepo.findByNameContainsIgnoreCase(value);break;
+            default:groupMenuList = groupMenuRepo.findAll();break;
+        }
+        List<RespGroupMenuDTO> listRespGroupMenu = convertToListRespGroupMenuDTO(groupMenuList);
+        if (listRespGroupMenu.isEmpty()) {
+            GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
+            return;
+        }
+        try {
+            FileUtils.forceMkdir(new File(OtherConfig.getPathGeneratePDF()));
+        } catch (IOException e) {
+            LoggingFile.exceptionStringz("GroupMenuService",
+                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        }
+        Map<String,Object> map = new HashMap<>();
+        String strHtml = null;
+        Context context = new Context();
+        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new RespGroupMenuDTO());
+        List<String> listTampungSebentar = new ArrayList<>();
+        List<String> listHelper = new ArrayList<>();
+        for (Map.Entry<String,Object> entry : mapColumnName.entrySet()) {
+            listTampungSebentar.add(GlobalFunction.camelToStandar(entry.getKey()));
+            listHelper.add(entry.getKey());
+        }
+        Map<String,Object> mapTampung = null;
+        List<Map<String,Object>> listMap = new ArrayList<>();
+        for (int i = 0; i < listRespGroupMenu.size(); i++) {
+            mapTampung = GlobalFunction.convertClassToObject(listRespGroupMenu.get(i),null);
+            listMap.add(mapTampung);
+        }
+        map.put("listKolom",listTampungSebentar);
+        map.put("listContent",listMap);
+        map.put("listHelper",listHelper);
+        map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
+        map.put("username","pollchihuy");//saat ini saya hardcode , nanti diambil dari value di token yah
+        map.put("totalData",listRespGroupMenu.size());
+        map.put("title","REPORT GROUP MENU");
+        context.setVariables(map);
+        strHtml = springTemplateEngine.process("global-report",context);
+        try {
+            pdfGenerator.htmlToPdf(strHtml,"group-menu");
+        } catch (IOException e) {
+            LoggingFile.exceptionStringz("GroupMenuService",
+                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        }
     }
 
     public RespGroupMenuDTO convertToGroupMenuDTO(GroupMenu groupMenu){

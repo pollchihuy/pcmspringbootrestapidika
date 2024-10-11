@@ -2,8 +2,12 @@ package com.juaracoding.service;
 
 import com.juaracoding.config.OtherConfig;
 import com.juaracoding.core.IService;
+import com.juaracoding.dto.response.RespAksesDTO;
+import com.juaracoding.dto.response.RespUserDTO;
+import com.juaracoding.dto.response.RespUserDTO;
 import com.juaracoding.dto.validasi.RegisDTO;
 import com.juaracoding.dto.validasi.ValUserDTO;
+import com.juaracoding.model.Akses;
 import com.juaracoding.model.User;
 import com.juaracoding.model.User;
 import com.juaracoding.repo.UserRepo;
@@ -11,6 +15,7 @@ import com.juaracoding.util.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
+import org.apache.commons.io.FileUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +24,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -41,6 +50,13 @@ public class UserService implements IService<User> {
 
     @Autowired
     private TransformToDTO transformToDTO;
+
+    @Autowired
+    private PdfGenerator pdfGenerator;
+
+    @Autowired
+    private SpringTemplateEngine springTemplateEngine;
+
     private StringBuilder sBuild = new StringBuilder();
 
 
@@ -228,6 +244,61 @@ public class UserService implements IService<User> {
             strBody[i][1] = strNamaUser;
         }
         new ExcelWriter(strBody, strHeaderArr,"sheet-1", response);
+    }
+
+    public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
+        List<User> userList = null;
+        switch (column){
+            case "nama-lengkap": userList = userRepo.findByNamaLengkapContainingIgnoreCase(value);break;
+            case "alamat": userList = userRepo.findByAlamatContainingIgnoreCase(value);break;
+            case "email": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
+            case "username": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
+            case "no-hp": userList = userRepo.findByNoHpContainingIgnoreCase(value);break;
+            case "tanggal-lahir": userList = userRepo.findByTanggalLahirContainingIgnoreCase(value);break;
+            default:userList = userRepo.findAll();break;
+        }
+        List<RespUserDTO> listRespMenu = convertToListRespUserDTO(userList);
+        if (listRespMenu.isEmpty()) {
+            GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
+            return;
+        }
+        try {
+            FileUtils.forceMkdir(new File(OtherConfig.getPathGeneratePDF()));
+        } catch (IOException e) {
+            LoggingFile.exceptionStringz("UserService",
+                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        }
+        Map<String,Object> map = new HashMap<>();
+        String strHtml = null;
+        Context context = new Context();
+        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new RespUserDTO());
+        List<String> listTampungSebentar = new ArrayList<>();
+        List<String> listHelper = new ArrayList<>();//untuk mapping otomatis di html nya
+        for (Map.Entry<String,Object> entry : mapColumnName.entrySet()) {
+            listTampungSebentar.add(GlobalFunction.camelToStandar(entry.getKey()));
+            listHelper.add(entry.getKey());
+        }
+        Map<String,Object> mapTampung = null;
+        List<Map<String,Object>> listMap = new ArrayList<>();
+        for (int i = 0; i < listRespMenu.size(); i++) {
+            mapTampung = GlobalFunction.convertClassToObject(listRespMenu.get(i),null);
+            listMap.add(mapTampung);
+        }
+        map.put("listKolom",listTampungSebentar);
+        map.put("listContent",listMap);
+        map.put("listHelper",listHelper);
+        map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
+        map.put("username","pollchihuy");//saat ini saya hardcode , nanti diambil dari value di token yah
+        map.put("totalData",listRespMenu.size());
+        map.put("title","REPORT AKSES");
+        context.setVariables(map);
+        strHtml = springTemplateEngine.process("global-report",context);
+        try {
+            pdfGenerator.htmlToPdf(strHtml,"user");
+        } catch (IOException e) {
+            LoggingFile.exceptionStringz("UserService",
+                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        }
     }
 
     public com.juaracoding.dto.response.RespUserDTO convertToUserDTO(User groupUser){

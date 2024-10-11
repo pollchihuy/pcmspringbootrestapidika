@@ -11,8 +11,11 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
 public class GlobalFunction {
 
@@ -169,9 +172,8 @@ public class GlobalFunction {
     }
 
     public static Map<String,Object> convertClassToObject(Object object){
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new LinkedHashMap<>();
         Field[] fields = object.getClass().getDeclaredFields();
-
         for (Field field: fields) {
             field.setAccessible(true);
             try {
@@ -180,7 +182,6 @@ public class GlobalFunction {
                 LoggingFile.exceptionStringz("GlobalFunction","convertClassToObject",e, OtherConfig.getFlagLogging());
             }
         }
-
         return map;
     }
 
@@ -197,5 +198,69 @@ public class GlobalFunction {
             }
         }
         return map;
+    }
+    public static String camelToStandar(String str)
+    {
+        StringBuilder sb = new StringBuilder();
+        char c = str.charAt(0);
+        sb.append(Character.toLowerCase(c));
+        for (int i = 1; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if (Character.isUpperCase(ch)) {
+                sb.append(' ').append(Character.toLowerCase(ch));
+            }
+            else {
+                sb.append(ch);
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /** saya hardcode pattern nya karena kebutuhan report aja , jadi tidak perlu memasukkan pattern saat menggunakan functional ini */
+    public static String formatingDateDDMMMMYYYY(){
+        /** mengambil current time saat ini **/
+        return new SimpleDateFormat("dd MMMM yyyy HH:mm:ss").format(new Date());
+    }
+    public static String formatingDateDDMMMMYYYY(LocalDate localDate){
+        /** mengambil current time saat ini **/
+        return new SimpleDateFormat("dd MMMM yyyy").
+                format(Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+    }
+    public static String formatingDateDDMMMMYYYY(Date date){
+        /** mengambil current time saat ini **/
+        return new SimpleDateFormat("dd MMMM yyyy").format(date);
+    }
+
+    /** untuk mekanisme casting date beraneka ragam, tidak seperti functional yang dioverload sebelumnya
+     * jadi parameter pattern harus diikutkan
+     * y – Year (yyyy->1996; yy-> 96)
+     * M – Month in year (MMMM->July; MMM->Jul; MM->07)
+     * d – Day in month (dd--> 1-31)
+     * E – Day name in week (EEE ---> Friday, EE --> Fri)
+     * a – AM/PM marker (AM, PM)
+     * H – Hour in day (HH--> 0-23)
+     * h – Hour in AM/PM (hh--> 1-12)
+     * m – Minute in hour (mm---> 0-60)
+     * s – Second in minute (ss-->0-60)
+     * S – millsecond (SSS--> 138)
+     * */
+    public static String formatingDateDDMMMMYYYY(String strDate,String pattern) throws ParseException {
+        return new SimpleDateFormat("dd MMMM yyyy").
+                format(new SimpleDateFormat(pattern, Locale.ENGLISH).parse(strDate));
+    }
+    public static String formatingDate(String newPattern){
+        return new SimpleDateFormat(newPattern).format(new Date());
+    }
+    public static String formatingDate(LocalDate localDate,String newPattern){
+        return new SimpleDateFormat(newPattern).
+                format(Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+    }
+    public static String formatingDate(Date date,String newPattern){
+        return new SimpleDateFormat(newPattern).format(date);
+    }
+    public static String formatingDate(String strDate,String currentPattern,String newPattern) throws ParseException {
+        return new SimpleDateFormat(newPattern).
+                format(new SimpleDateFormat(currentPattern, Locale.ENGLISH).parse(strDate));
     }
 }

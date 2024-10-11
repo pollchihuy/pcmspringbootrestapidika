@@ -148,6 +148,21 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         System.out.println("====================================START RESPONSE BODY =================================================");
         System.out.println(responseBody.asPrettyString());// untuk melihat isi dari response body dalam bentuk JSON
     }
+//    APP_PORT=8080;CONTOH=OK-BOS;CONTOH_LAIN=HUE;DB_PWD=b381990e93da47d98266f459e749d3af;DB_URL=abb07b3e6ce49452eee7f5532759ade255405fb9712a08b8b79917eea06353738db3d72c7d41436421fc59ebf1ae02fbbbde46a1679ac3f55072998cbae86e9d9649f318ddbb8d8fbcd1fae37a29e357a97847d15ca393b305e550261883dfbd;DB_USN=f691d7c07971842c371c2a2dc899f811;DDL_AUTO=create-drop;EMAIL_USN=17d63b1126a9e9b307867db15245d8e7ab1442297b4e300640ed22a615eba3a0;JWT_SECRET=660a1e020c2fdc8c12043a5dd3321cf2c7e2da5b11c203f352901fe6770c319cca98bb7f0332964b2bde23046fc461b1;TEST_AUTO=y;FLAG_LOGGING=y
+    @Test(priority = 6)
+    private void generatePDF(){
+        RequestSpecification httpRequest = given().
+                header("Content-Type","application/json").
+                header("accept","*/*").
+                param("col","name").
+                param("val",groupMenu.getName());
+
+        String pathVariable = "/api/v1/group_menu/download-pdf";
+        Response response = httpRequest.request(Method.GET, pathVariable);
+        ResponseBody responseBody = response.getBody();// seluruh body dari response
+        System.out.println("====================================START RESPONSE BODY =================================================");
+        System.out.println(responseBody.asPrettyString());// untuk melihat isi dari response body dalam bentuk JSON
+    }
 
     //    APP_PORT=8080;CONTOH=OK-BOS;CONTOH_LAIN=HUE;DB_PWD=b381990e93da47d98266f459e749d3af;DB_URL=abb07b3e6ce49452eee7f5532759ade255405fb9712a08b8b79917eea06353738db3d72c7d41436421fc59ebf1ae02fbbbde46a1679ac3f55072998cbae86e9d9649f318ddbb8d8fbcd1fae37a29e357a97847d15ca393b305e550261883dfbd;DB_USN=f691d7c07971842c371c2a2dc899f811;DDL_AUTO=create-drop;EMAIL_USN=17d63b1126a9e9b307867db15245d8e7ab1442297b4e300640ed22a615eba3a0;JWT_SECRET=660a1e020c2fdc8c12043a5dd3321cf2c7e2da5b11c203f352901fe6770c319cca98bb7f0332964b2bde23046fc461b1;TEST_AUTO=y;FLAG_LOGGING=Y
     @Test(priority = 100)

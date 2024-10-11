@@ -2,13 +2,17 @@ package com.juaracoding.service;
 
 import com.juaracoding.config.OtherConfig;
 import com.juaracoding.core.IService;
+import com.juaracoding.dto.response.RespGroupMenuDTO;
+import com.juaracoding.dto.response.RespMenuDTO;
 import com.juaracoding.dto.validasi.ValMenuDTO;
+import com.juaracoding.model.GroupMenu;
 import com.juaracoding.model.Menu;
 import com.juaracoding.repo.MenuRepo;
 import com.juaracoding.util.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
+import org.apache.commons.io.FileUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +21,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -39,6 +47,13 @@ public class MenuService implements IService<Menu> {
 
     @Autowired
     private TransformToDTO transformToDTO;
+    
+    @Autowired
+    private PdfGenerator pdfGenerator;
+
+    @Autowired
+    private SpringTemplateEngine springTemplateEngine;
+
     private StringBuilder sBuild = new StringBuilder();
 
 
@@ -206,6 +221,57 @@ public class MenuService implements IService<Menu> {
             strBody[i][1] = strNamaMenu;
         }
         new ExcelWriter(strBody, strHeaderArr,"sheet-1", response);
+    }
+
+    public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
+        List<Menu> menuList = null;
+        switch (column){
+            case "name": menuList = menuRepo.findByNamaContainsIgnoreCase(value);break;
+            default:menuList = menuRepo.findAll();break;
+        }
+        List<RespMenuDTO> listRespMenu = convertToListRespMenuDTO(menuList);
+        if (listRespMenu.isEmpty()) {
+            GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
+            return;
+        }
+        try {
+            FileUtils.forceMkdir(new File(OtherConfig.getPathGeneratePDF()));
+        } catch (IOException e) {
+            LoggingFile.exceptionStringz("MenuService",
+                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        }
+        Map<String,Object> map = new HashMap<>();
+        String strHtml = null;
+        Context context = new Context();
+        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new RespGroupMenuDTO());
+        List<String> listTampungSebentar = new ArrayList<>();
+        List<String> listHelper = new ArrayList<>();
+
+        for (Map.Entry<String,Object> entry : mapColumnName.entrySet()) {
+            listTampungSebentar.add(GlobalFunction.camelToStandar(entry.getKey()));
+            listHelper.add(entry.getKey());
+        }
+        Map<String,Object> mapTampung = null;
+        List<Map<String,Object>> listMap = new ArrayList<>();
+        for (int i = 0; i < listRespMenu.size(); i++) {
+            mapTampung = GlobalFunction.convertClassToObject(listRespMenu.get(i),null);
+            listMap.add(mapTampung);
+        }
+        map.put("listKolom",listTampungSebentar);
+        map.put("listContent",listMap);
+        map.put("listHelper",listHelper);
+        map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
+        map.put("username","pollchihuy");//saat ini saya hardcode , nanti diambil dari value di token yah
+        map.put("totalData",listRespMenu.size());
+        map.put("title","REPORT MENU");
+        context.setVariables(map);
+        strHtml = springTemplateEngine.process("global-report",context);
+        try {
+            pdfGenerator.htmlToPdf(strHtml,"menu");
+        } catch (IOException e) {
+            LoggingFile.exceptionStringz("MenuService",
+                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        }
     }
 
     public com.juaracoding.dto.response.RespMenuDTO convertToMenuDTO(Menu groupMenu){

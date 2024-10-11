@@ -8,7 +8,9 @@ public class RespUserDTO {
     private String alamat;
     private String email;
     private String username;
+
     private LocalDate tanggalLahir;
+
     private Integer umur;
 
     public Long getId() {

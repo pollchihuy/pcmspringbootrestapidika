@@ -25,7 +25,18 @@
     </parent>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.itextpdf/html2pdf -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>html2pdf</artifactId>
+            <version>5.0.3</version>
+        </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
         <!-- START OF DEPENDENCY SPRING SECURITY -->
         <dependency>

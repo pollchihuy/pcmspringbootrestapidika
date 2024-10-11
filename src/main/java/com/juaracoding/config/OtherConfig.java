@@ -18,7 +18,7 @@ public class OtherConfig {
     private static String howToDownloadReport;//penambahan 07-01-2024
 //    private static String pathSeparatorReport;
 //    /** baiknya yg berhubungan dengan directory / path dijadikan environment variables*/
-//    private static String pathGeneratePDF;
+    private static String pathGeneratePDF;
 //
 //    /** url api untuk input ke log table error */
 //    private static String urlAPILogRequestError;
@@ -45,9 +45,9 @@ public class OtherConfig {
 //        return pathSeparatorReport;
 //    }
 //
-//    public static String getPathGeneratePDF() {
-//        return pathGeneratePDF;
-//    }
+    public static String getPathGeneratePDF() {
+        return pathGeneratePDF;
+    }
 //
 //
 //    @Value("${path.separator.report}")
@@ -55,10 +55,10 @@ public class OtherConfig {
 //        OtherConfig.pathSeparatorReport = pathSeparatorReport;
 //    }
 //
-//    @Value("${path.generate.pdf}")
-//    private void setPathGeneratePDF(String pathGeneratePDF) {
-//        OtherConfig.pathGeneratePDF = pathGeneratePDF;
-//    }
+    @Value("${path.generate.pdf}")
+    private void setPathGeneratePDF(String pathGeneratePDF) {
+        OtherConfig.pathGeneratePDF = pathGeneratePDF;
+    }
 //
     public static String getHowToDownloadReport() {
         return howToDownloadReport;

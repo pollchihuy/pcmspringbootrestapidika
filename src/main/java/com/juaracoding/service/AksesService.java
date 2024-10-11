@@ -3,14 +3,18 @@ package com.juaracoding.service;
 import com.juaracoding.config.OtherConfig;
 import com.juaracoding.core.IService;
 import com.juaracoding.dto.response.RespAksesDTO;
+import com.juaracoding.dto.response.RespAksesDTO;
+import com.juaracoding.dto.response.RespMenuDTO;
 import com.juaracoding.dto.validasi.ValAksesDTO;
 import com.juaracoding.model.Akses;
 import com.juaracoding.model.Akses;
+import com.juaracoding.model.Menu;
 import com.juaracoding.repo.AksesRepo;
 import com.juaracoding.util.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
+import org.apache.commons.io.FileUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +23,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -38,6 +46,13 @@ public class AksesService implements IService<Akses> {
 
     @Autowired
     private TransformToDTO transformToDTO;
+
+    @Autowired
+    private PdfGenerator pdfGenerator;
+
+    @Autowired
+    private SpringTemplateEngine springTemplateEngine;
+    
     private StringBuilder sBuild = new StringBuilder();
 
 
@@ -203,6 +218,56 @@ public class AksesService implements IService<Akses> {
             strBody[i][1] = strNamaAkses;
         }
         new ExcelWriter(strBody, strHeaderArr,"sheet-1", response);
+    }
+
+    public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
+        List<Akses> aksesList = null;
+        switch (column){
+            case "name": aksesList = aksesRepo.findByNamaContainingIgnoreCase(value);break;
+            default:aksesList = aksesRepo.findAll();break;
+        }
+        List<RespAksesDTO> listRespMenu = convertToListRespAksesDTO(aksesList);
+        if (listRespMenu.isEmpty()) {
+            GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
+            return;
+        }
+        try {
+            FileUtils.forceMkdir(new File(OtherConfig.getPathGeneratePDF()));
+        } catch (IOException e) {
+            LoggingFile.exceptionStringz("AksesService",
+                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        }
+        Map<String,Object> map = new HashMap<>();
+        String strHtml = null;
+        Context context = new Context();
+        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new RespAksesDTO());
+        List<String> listTampungSebentar = new ArrayList<>();
+        List<String> listHelper = new ArrayList<>();
+        for (Map.Entry<String,Object> entry : mapColumnName.entrySet()) {
+            listTampungSebentar.add(GlobalFunction.camelToStandar(entry.getKey()));
+            listHelper.add(entry.getKey());
+        }
+        Map<String,Object> mapTampung = null;
+        List<Map<String,Object>> listMap = new ArrayList<>();
+        for (int i = 0; i < listRespMenu.size(); i++) {
+            mapTampung = GlobalFunction.convertClassToObject(listRespMenu.get(i),null);
+            listMap.add(mapTampung);
+        }
+        map.put("listKolom",listTampungSebentar);
+        map.put("listContent",listMap);
+        map.put("listHelper",listHelper);
+        map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
+        map.put("username","pollchihuy");//saat ini saya hardcode , nanti diambil dari value di token yah
+        map.put("totalData",listRespMenu.size());
+        map.put("title","REPORT AKSES");
+        context.setVariables(map);
+        strHtml = springTemplateEngine.process("global-report",context);
+        try {
+            pdfGenerator.htmlToPdf(strHtml,"akses");
+        } catch (IOException e) {
+            LoggingFile.exceptionStringz("AksesService",
+                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        }
     }
 
     public RespAksesDTO convertToAksesDTO(Akses groupAkses){
