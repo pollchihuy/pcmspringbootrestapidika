@@ -26,7 +26,7 @@ public class User implements UserDetails {
     private String username;
 
     @Column(length = 64,unique = true)
-    private String password;
+    private String password;//8 - 16
 
     @Transient
     private String passwordBaru;

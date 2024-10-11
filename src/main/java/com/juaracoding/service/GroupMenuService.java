@@ -45,20 +45,17 @@ public class GroupMenuService implements IService<GroupMenu> {
     private TransformToDTO transformToDTO;
     private StringBuilder sBuild = new StringBuilder();
 
-
     @Override
     public ResponseEntity<Object> save(GroupMenu groupMenu, HttpServletRequest request) {
         if(groupMenu==null){
             return GlobalFunction.validasiGagal("OBJECT NULL","FV001001001",request);
         }
-
         try {
             groupMenuRepo.save(groupMenu);
         }catch (Exception e){
             LoggingFile.exceptionStringz("GroupMenuService","save",e,OtherConfig.getFlagLogging());
             return GlobalFunction.dataGagalDisimpan("FE001001001",request);
         }
-
         return GlobalFunction.dataBerhasilDisimpan(request);
     }
 
@@ -203,23 +200,29 @@ public class GroupMenuService implements IService<GroupMenu> {
         String headerValue = sBuild.append(OtherConfig.getHowToDownloadReport()).append("; filename=groupmenu_").
                 append( new SimpleDateFormat("dd-MM-yyyy-HH-mm-ss.SSS").format(new Date())).//audit trails lewat nama file nya
                         append(".xlsx").toString();//buat excel
-//                        append(".csv").toString();//buat csv
         response.setHeader(headerKey, headerValue);
         response.setContentType("application/octet-stream");
 
-        String [] strHeaderArr = {"ID","NAMA GROUP MENU"};
-//        String [] strHeaderArr = {"ID","NAMA GROUP MENU","ALAMAT","EMAIL","TOKEN"};
-        String[][] strBody = new String[listRespGroupMenu.size()][strHeaderArr.length];
-        String strIdGroup = "";// VARIABLE UNTUK MEMFILTER DATA NYA TERLEBIH DAHULU
-        String strNamaGroup = "";// VARIABLE UNTUK MEMFILTER DATA NYA TERLEBIH DAHULU
-        for (int i = 0; i < listRespGroupMenu.size(); i++) {
-            strIdGroup = listRespGroupMenu.get(i).getId() == null ? "-" : String.valueOf(listRespGroupMenu.get(i).getId());//null handling
-            strNamaGroup = listRespGroupMenu.get(i).getName() == null ? "-" : listRespGroupMenu.get(i).getName();//null handling
-            strBody[i][0] = strIdGroup;
-            strBody[i][1] = strNamaGroup;
+        Map<String,Object> map = GlobalFunction.convertClassToObject(new RespGroupMenuDTO());
+        List<String> listTampungSebentar = new ArrayList<>();
+        for (Map.Entry<String,Object> entry : map.entrySet()) {
+            listTampungSebentar.add(entry.getKey());
         }
-//        new CSVWriter(strBody, strHeaderArr, response);
-        new ExcelWriter(strBody, strHeaderArr,"sheet-1", response);
+        int intListTampungSebentar = listTampungSebentar.size();
+        String [] headerArr = new String[intListTampungSebentar];
+        String [] loopDataArr = new String[intListTampungSebentar];
+        for (int i = 0; i < intListTampungSebentar; i++) {
+            headerArr[i] = listTampungSebentar.get(i);
+            loopDataArr[i] = listTampungSebentar.get(i);
+        }
+        String[][] strBody = new String[listRespGroupMenu.size()][intListTampungSebentar];
+        for (int i = 0; i < listRespGroupMenu.size(); i++) {
+            map = GlobalFunction.convertClassToObject(listRespGroupMenu.get(i));
+            for (int j = 0; j < intListTampungSebentar; j++) {
+                strBody[i][j] = (String) map.get(loopDataArr[j]);
+            }
+        }
+        new ExcelWriter(strBody, headerArr,"sheet-1", response);
     }
 
     public RespGroupMenuDTO convertToGroupMenuDTO(GroupMenu groupMenu){

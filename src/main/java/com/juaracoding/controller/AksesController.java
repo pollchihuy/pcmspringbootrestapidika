@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +33,18 @@ public class AksesController {
         mapSorting.put("nama","group");
     }
 
+    /** saat user melakukan mengklik menu group menu , ini adalah api default nya /api/akses*/
+    @GetMapping
+    @PreAuthorize("hasAuthority('AKSES')")
+    public ResponseEntity<Object> defaultPage(
+            HttpServletRequest request
+    ){
+        Pageable pageable =  PageRequest.of(0,10,
+                Sort.by("id"));
+        return aksesService.findAll(pageable,request);
+    }
+
+    @PreAuthorize("hasAuthority('AKSES')")
     @PostMapping("/v1")
     public ResponseEntity<Object> save(@Valid @RequestBody ValAksesDTO valAksesDTO,
                                        HttpServletRequest request
@@ -39,6 +52,7 @@ public class AksesController {
         return aksesService.save(aksesService.convertToEntity(valAksesDTO), request);
     }
 
+    @PreAuthorize("hasAuthority('AKSES')")
     @PutMapping("/v1/{id}")
     public ResponseEntity<Object> update(
                                         @PathVariable Long id,
@@ -48,6 +62,7 @@ public class AksesController {
         return aksesService.update(id, aksesService.convertToEntity(valAksesDTO), request);
     }
 
+    @PreAuthorize("hasAuthority('AKSES')")
     @DeleteMapping("/v1/{id}")
     public ResponseEntity<Object> delete(
             @PathVariable Long id,
@@ -56,6 +71,7 @@ public class AksesController {
         return aksesService.delete(id, request);
     }
 
+    @PreAuthorize("hasAuthority('AKSES')")
     @GetMapping("/v1/{id}")
     public ResponseEntity<Object> findById(@PathVariable(value = "id") Long id,HttpServletRequest request){
         return aksesService.findById(id,request);

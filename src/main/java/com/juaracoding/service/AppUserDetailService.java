@@ -9,6 +9,7 @@ import com.juaracoding.model.User;
 import com.juaracoding.repo.UserRepo;
 import com.juaracoding.security.BcryptImpl;
 import com.juaracoding.security.Crypto;
+import com.juaracoding.security.JwtUtility;
 import com.juaracoding.util.GlobalFunction;
 import com.juaracoding.util.LoggingFile;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +18,6 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,8 +32,8 @@ public class AppUserDetailService implements UserDetailsService {
     @Autowired
     private UserRepo userRepo;
 
-//    @Autowired
-//    private JwtUtility jwtUtility;
+    @Autowired
+    private JwtUtility jwtUtility;
 
     private Map<String,Object> m = new HashMap<>();
 
@@ -60,11 +60,17 @@ public class AppUserDetailService implements UserDetailsService {
             return GlobalFunction.customReponse("X-03-031","username dan password salah",request);
         }
         UserDetails userDetails = loadUserByUsername(user.getUsername());
+        /** start jwt config */
         Map<String,Object> mapForClaims = new HashMap<>();
-        mapForClaims.put("uid",user.getId());
-        mapForClaims.put("email",user.getEmail());
-//        String token = jwtUtility.generateToken(userDetails,mapForClaims);
-        m.put("token", Crypto.performEncrypt(nextUser.getEmail()));
+        mapForClaims.put("uid",nextUser.getId());//payload
+        mapForClaims.put("em",nextUser.getEmail());//payload
+        mapForClaims.put("pw",nextUser.getPassword());//payload
+        String token = jwtUtility.generateToken(userDetails,mapForClaims);
+        System.out.println("TOKEN MASIH IJO : "+token);
+        m.put("token", Crypto.performEncrypt(token));
+//        m.put("token", token);
+        /** end jwt config */
+//        m.put("token", Crypto.performEncrypt(nextUser.getUsername()));//format token custom
         m.put("menu", convertToListRespMenuDTO(nextUser.getAkses().getMenuList()));
         return  GlobalFunction.customDataDitemukan("Login Berhasil",m,request);
     }
@@ -270,30 +276,10 @@ public class AppUserDetailService implements UserDetailsService {
         Optional<User> opUser = userRepo.findTop1ByUsernameOrNoHpOrEmailAndIsRegistered(s,s,s,true);
         if(opUser.isEmpty())
         {
-            return null;
+            throw new UsernameNotFoundException("TOKEN TIDAK VALID");
+//            return null;
         }
         User userNext = opUser.get();
-        /**
-         PARAMETER KE 3 TIDAK MENGGUNAKAN ROLE DARI SPRINGSECURITY CORE
-         ROLE MODEL AKAN DITAMBAHKAN DI METHOD authManager DAN DIJADIKAN INFORMASI DI DALAM JWT AGAR LEBIH DINAMIS
-//         */
-//        Set<GrantedAuthority> grantedAuthorities = (Set<GrantedAuthority>) userNext.getAuthorities();
-//        List<Menu> ltMenu = userNext.getAkses().getLtMenu();
-//        if(ltMenu==null){
-//            // kalau kosong kasih akses nya disini menu default yang sudah dikonfigurasi di security biar bisa diakses seluruh user
-//            // saya buat contoh api nya adalah seluruh menu dari group menu ARTIKEL
-//            grantedAuthorities.add(new SimpleGrantedAuthority("ARTIKEL-1"));
-//            grantedAuthorities.add(new SimpleGrantedAuthority("ARTIKEL-2"));
-//        }else {
-//            // kalau sudah diberi akses maka menu yg dapat di akses adalah
-//            // menu berdasarkan konfigurasi akses tersebut ditambah menu default
-//
-//            String strNamaMenu = "";
-//            for (int i = 0; i < ltMenu.size() ; i++) {
-//                strNamaMenu = ltMenu.get(i).getNamaMenu();
-//                grantedAuthorities.add(new SimpleGrantedAuthority(strNamaMenu));
-//            }
-//        }
 
         return new org.springframework.security.core.userdetails.
                 User(userNext.getUsername(),userNext.getPassword(),userNext.getAuthorities());

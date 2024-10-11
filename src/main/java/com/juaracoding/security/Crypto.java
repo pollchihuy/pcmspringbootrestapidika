@@ -52,7 +52,9 @@ public class Crypto {
 
     public static void main(String[] args) {
 
-        String strToEncrypt = "paul";//put text to encrypt in here
+        Long timeMilis = System.currentTimeMillis();
+        System.out.println(timeMilis);
+        String strToEncrypt = "login#"+timeMilis;//put text to encrypt in here
         String encryptionResult = new Crypto().performEncrypt(strToEncrypt);
         System.out.println("Encryption Result : "+encryptionResult);
 

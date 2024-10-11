@@ -31,6 +31,22 @@ public class AESGeneratedKey {
         }
     }
 
+    public static String getKey() {
+        SecretKey aesKey = null;
+        try {
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES", "BC");
+            // Atur panjang kunci (misalnya: 128, 192, atau 256 bit)
+            keyGen.init(128);
+            // Generate kunci AES
+            aesKey = keyGen.generateKey();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bytesToHex(aesKey.getEncoded());
+    }
+
     // Helper method untuk mengubah byte array menjadi string heksadesimal
     public static String bytesToHex(byte[] bytes) {
         StringBuilder result = new StringBuilder();

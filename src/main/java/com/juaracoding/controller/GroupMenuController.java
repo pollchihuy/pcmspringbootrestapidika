@@ -33,6 +33,17 @@ public class GroupMenuController {
         mapSorting.put("nama","group");
     }
 
+    /** saat user melakukan mengklik menu group menu , ini adalah api default nya /api/group-menu*/
+    @GetMapping
+    @PreAuthorize("hasAuthority('GROUP-MENU')")
+    public ResponseEntity<Object> defaultPage(
+            HttpServletRequest request
+    ){
+        Pageable pageable =  PageRequest.of(0,10,
+                Sort.by("id"));
+        return groupMenuService.findAll(pageable,request);
+    }
+
     @PreAuthorize("hasAuthority('GROUP-MENU')")
     @PostMapping("/v1")
     public ResponseEntity<Object> save(@Valid @RequestBody ValGroupMenuDTO valGroupMenuDTO,
@@ -51,7 +62,7 @@ public class GroupMenuController {
         return groupMenuService.update(id,groupMenuService.convertToEntity(valGroupMenuDTO), request);
     }
 
-    @PreAuthorize("hasAuthority('cumi')")
+    @PreAuthorize("hasAuthority('GROUP-MENU')")
     @DeleteMapping("/v1/{id}")
     public ResponseEntity<Object> delete(
             @PathVariable Long id,
@@ -60,13 +71,13 @@ public class GroupMenuController {
         return groupMenuService.delete(id, request);
     }
 
+    @PreAuthorize("hasAuthority('GROUP-MENU')")
     @GetMapping("/v1/{id}")
     public ResponseEntity<Object> findById(@PathVariable(value = "id") Long id,HttpServletRequest request){
         return groupMenuService.findById(id,request);
     }
 
 
-//    localhost:8080/api/v1/all/0/asc/id?column_name=id&value=no&size=2
     @GetMapping("/v1/all/{page}/{sort}/{sort-by}")
     public ResponseEntity<Object> findAll(
             @PathVariable(value = "page") Integer page,//page yang ke ?

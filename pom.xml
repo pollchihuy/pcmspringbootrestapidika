@@ -10,6 +10,8 @@
 
     <properties>
         <jdk.version>17</jdk.version>
+        <bootstrap.version>5.3.3</bootstrap.version>
+        <webjars-locator.version>0.52</webjars-locator.version>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -23,6 +25,7 @@
     </parent>
 
     <dependencies>
+
 
         <!-- START OF DEPENDENCY SPRING SECURITY -->
         <dependency>

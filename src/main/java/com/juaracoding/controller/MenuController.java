@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +33,18 @@ public class MenuController {
         mapSorting.put("nama","group");
     }
 
+    /** saat user melakukan mengklik menu group menu , ini adalah api default nya /api/menu*/
+    @GetMapping
+    @PreAuthorize("hasAuthority('MENU')")
+    public ResponseEntity<Object> defaultPage(
+            HttpServletRequest request
+    ){
+        Pageable pageable =  PageRequest.of(0,10,
+                Sort.by("id"));
+        return menuService.findAll(pageable,request);
+    }
+
+    @PreAuthorize("hasAuthority('MENU')")
     @PostMapping("/v1")
     public ResponseEntity<Object> save(@Valid @RequestBody ValMenuDTO valMenuDTO,
                                        HttpServletRequest request
@@ -39,6 +52,7 @@ public class MenuController {
         return menuService.save(menuService.convertToEntity(valMenuDTO), request);
     }
 
+    @PreAuthorize("hasAuthority('MENU')")
     @PutMapping("/v1/{id}")
     public ResponseEntity<Object> update(
                                         @PathVariable Long id,
@@ -48,6 +62,7 @@ public class MenuController {
         return menuService.update(id, menuService.convertToEntity(valMenuDTO), request);
     }
 
+    @PreAuthorize("hasAuthority('MENU')")
     @DeleteMapping("/v1/{id}")
     public ResponseEntity<Object> delete(
             @PathVariable Long id,
@@ -56,6 +71,7 @@ public class MenuController {
         return menuService.delete(id, request);
     }
 
+    @PreAuthorize("hasAuthority('MENU')")
     @GetMapping("/v1/{id}")
     public ResponseEntity<Object> findById(@PathVariable(value = "id") Long id,HttpServletRequest request){
         return menuService.findById(id,request);
