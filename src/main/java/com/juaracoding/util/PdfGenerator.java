@@ -6,6 +6,8 @@ import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.juaracoding.config.OtherConfig;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -23,29 +25,60 @@ import java.util.Map;
 @Component
 public class PdfGenerator {
     private String [] strExceptionArr = new String[2];
-
-    public PdfGenerator() {
-        strExceptionArr[0] = "PdfGenerator";
-    }
     private StringBuilder sBuild = new StringBuilder();
+    private ServletOutputStream os;
 
     /**
      *
      * @param html - thymeleaf yang sudah dirender menjadi html (Object-object nya sudah dimapping)
-     * @param path - path tempat file akan tersimpan yang di set di otherconfig.properties , saya menggunakan C:/ karena semua pasti ada drive itu, kalau tidak ada tinggal dirubah saja arahkan kemana file nya nanti dan pastikan foldernya terbentuk dulu yah
      * @param prefixFile - awalan dari nama file nanti selanjutnya digunakan timestamp agar ada rekam jejak nya
-     * @param request - data request dari front end
      * @return seluruh data ini akan diproses
-     * @throws IOException - untuk error nya akan di throws ke function pemanggilnya jadi di handle disana saja agar bisa di response ke Front End
      */
-    public Map<String,Object> htmlToPdf(String html, String prefixFile) throws IOException {
+    public Map<String,Object> htmlToPdf(String html, String prefixFile) {
         Map<String,Object> map = new HashMap<>();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PdfWriter pdfWriter = new PdfWriter(byteArrayOutputStream);
         ConverterProperties converterProperties = new ConverterProperties();
         DefaultFontProvider defaultFontProvider = new DefaultFontProvider();
         FileOutputStream fileOutputStream = null;
+        String fileName = "";
+        try{
+            converterProperties.setFontProvider(defaultFontProvider);
+            HtmlConverter.convertToPdf(html,pdfWriter,converterProperties);
+            sBuild.setLength(0);
+            fileName = sBuild.append(prefixFile).append("_").
+                    append(new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date())).
+                    append(".pdf").toString();
+            System.out.println("Full Path : "+ OtherConfig.getPathGeneratePDF()+fileName);
 
+        }
+        finally {
+            try {
+                fileOutputStream = new FileOutputStream(OtherConfig.getPathGeneratePDF()+fileName);
+                byteArrayOutputStream.writeTo(fileOutputStream);
+                byteArrayOutputStream.close();
+                byteArrayOutputStream.flush();
+                fileOutputStream.close();
+            } catch (IOException e) {
+                LoggingFile.exceptionStringz("PdfGenerator","htmlToPDF",e,OtherConfig.getFlagLogging());
+                throw new RuntimeException(e);
+            }
+        }
+        return map;
+    }
+
+    /**
+     *
+     * @param html
+     * @param prefixFile
+     * @param response
+     */
+    public void htmlToPdf(String html, String prefixFile, HttpServletResponse response) {
+        Map<String,Object> map = new HashMap<>();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        PdfWriter pdfWriter = new PdfWriter(byteArrayOutputStream);
+        ConverterProperties converterProperties = new ConverterProperties();
+        DefaultFontProvider defaultFontProvider = new DefaultFontProvider();
         try{
             converterProperties.setFontProvider(defaultFontProvider);
             HtmlConverter.convertToPdf(html,pdfWriter,converterProperties);
@@ -53,16 +86,19 @@ public class PdfGenerator {
             String fileName = sBuild.append(prefixFile).append("_").
                     append(new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date())).
                     append(".pdf").toString();
-            System.out.println("Full Path : "+ OtherConfig.getPathGeneratePDF()+fileName);
-            fileOutputStream = new FileOutputStream(OtherConfig.getPathGeneratePDF()+fileName);
-            byteArrayOutputStream.writeTo(fileOutputStream);
+            response.setHeader("Content-Disposition", "attachment; filename=\""+fileName+"\"");
+            response.setContentType("application/pdf");
         }
         finally {
-
+            try{
+                os = response.getOutputStream();
+                byteArrayOutputStream.writeTo(os);
                 byteArrayOutputStream.close();
                 byteArrayOutputStream.flush();
-                fileOutputStream.close();
+                os.close();
+            }catch (Exception e){
+                LoggingFile.exceptionStringz("PdfGenerator","htmlToPdf", e, OtherConfig.getFlagLogging());
+            }
         }
-        return map;
     }
 }

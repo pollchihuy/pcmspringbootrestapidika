@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.juaracoding.config.OtherConfig;
 import com.juaracoding.handler.ResponseHandler;
+import com.juaracoding.security.Crypto;
+import com.juaracoding.security.JwtUtility;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -263,4 +265,11 @@ public class GlobalFunction {
         return new SimpleDateFormat(newPattern).
                 format(new SimpleDateFormat(currentPattern, Locale.ENGLISH).parse(strDate));
     }
+
+    public static Map<String,Object> claimsTokenBody(HttpServletRequest request){
+        String token = request.getHeader("Authorization");
+        token = token.substring(7);
+        return new JwtUtility().mappingBodyToken(Crypto.performDecrypt(token),new HashMap<>());
+    }
+
 }

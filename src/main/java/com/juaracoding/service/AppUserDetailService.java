@@ -63,8 +63,9 @@ public class AppUserDetailService implements UserDetailsService {
         /** start jwt config */
         Map<String,Object> mapForClaims = new HashMap<>();
         mapForClaims.put("uid",nextUser.getId());//payload
-        mapForClaims.put("em",nextUser.getEmail());//payload
-        mapForClaims.put("pw",nextUser.getPassword());//payload
+        mapForClaims.put("ml",nextUser.getEmail());//payload
+        mapForClaims.put("nl",nextUser.getNamaLengkap());//payload
+        mapForClaims.put("pn",nextUser.getNoHp());//payload
         String token = jwtUtility.generateToken(userDetails,mapForClaims);
         System.out.println("TOKEN MASIH IJO : "+token);
         m.put("token", Crypto.performEncrypt(token));

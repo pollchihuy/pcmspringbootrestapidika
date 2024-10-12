@@ -2,21 +2,18 @@ package com.juaracoding.service;
 
 import com.juaracoding.config.OtherConfig;
 import com.juaracoding.core.IService;
-import com.juaracoding.dto.response.RespAksesDTO;
-import com.juaracoding.dto.response.RespUserDTO;
+import com.juaracoding.dto.report.ReportUserDTO;
 import com.juaracoding.dto.response.RespUserDTO;
 import com.juaracoding.dto.validasi.RegisDTO;
 import com.juaracoding.dto.validasi.ValUserDTO;
-import com.juaracoding.model.Akses;
-import com.juaracoding.model.User;
 import com.juaracoding.model.User;
 import com.juaracoding.repo.UserRepo;
 import com.juaracoding.util.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-import org.apache.commons.io.FileUtils;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,8 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -45,7 +40,6 @@ public class UserService implements IService<User> {
     @Autowired
     private UserRepo userRepo;
 
-    @Autowired
     private ModelMapper modelMapper ;
 
     @Autowired
@@ -56,17 +50,35 @@ public class UserService implements IService<User> {
 
     @Autowired
     private SpringTemplateEngine springTemplateEngine;
-
     private StringBuilder sBuild = new StringBuilder();
+    //kita buat property baru di mapper
+    private PropertyMap<User, ReportUserDTO> propUserToReport;
 
+    /**
+     *  user memiliki object di dalam class nya yaitu akses
+     *  dimana kita ingin mengambil data object tersebut menjadi namaAkses saja
+     *  agar bisa dijadikan informasi di dalam report nanti
+     */
+    public UserService() {
+        modelMapper = new ModelMapper();
+        propUserToReport = new PropertyMap<User,ReportUserDTO>() {
+            protected void configure() {
+                /** masukkan informasi apapun nantinya ke dalam properties
+                 * jadi jika kita ingin menggunakan report
+                 * bisa dilakukan berkali-kali tanpa harus new PropertyMap lagi untuk object yang sama
+                 * jika relasi object nya bersarang
+                 */
+                map().setNamaAkses(source.getAkses().getNama());
+            }
+        };
+        modelMapper.addMappings(propUserToReport);
+    }
 
     @Override
     public ResponseEntity<Object> save(User user, HttpServletRequest request) {
-
         if(user==null){
             return GlobalFunction.validasiGagal("OBJECT NULL","FV002002002",request);
         }
-
         try {
             userRepo.save(user);
         }catch (Exception e){
@@ -248,6 +260,7 @@ public class UserService implements IService<User> {
 
     public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
         List<User> userList = null;
+        Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
         switch (column){
             case "nama-lengkap": userList = userRepo.findByNamaLengkapContainingIgnoreCase(value);break;
             case "alamat": userList = userRepo.findByAlamatContainingIgnoreCase(value);break;
@@ -257,21 +270,15 @@ public class UserService implements IService<User> {
             case "tanggal-lahir": userList = userRepo.findByTanggalLahirContainingIgnoreCase(value);break;
             default:userList = userRepo.findAll();break;
         }
-        List<RespUserDTO> listRespMenu = convertToListRespUserDTO(userList);
+        List<ReportUserDTO> listRespMenu = convertToReportUserDTO(userList);
         if (listRespMenu.isEmpty()) {
             GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
             return;
         }
-        try {
-            FileUtils.forceMkdir(new File(OtherConfig.getPathGeneratePDF()));
-        } catch (IOException e) {
-            LoggingFile.exceptionStringz("UserService",
-                    "generateToPDF",e,OtherConfig.getFlagLogging());
-        }
         Map<String,Object> map = new HashMap<>();
         String strHtml = null;
         Context context = new Context();
-        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new RespUserDTO());
+        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new ReportUserDTO());
         List<String> listTampungSebentar = new ArrayList<>();
         List<String> listHelper = new ArrayList<>();//untuk mapping otomatis di html nya
         for (Map.Entry<String,Object> entry : mapColumnName.entrySet()) {
@@ -288,17 +295,44 @@ public class UserService implements IService<User> {
         map.put("listContent",listMap);
         map.put("listHelper",listHelper);
         map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
-        map.put("username","pollchihuy");//saat ini saya hardcode , nanti diambil dari value di token yah
+        map.put("username",payloadJwt.get("namaLengkap"));
         map.put("totalData",listRespMenu.size());
         map.put("title","REPORT AKSES");
         context.setVariables(map);
         strHtml = springTemplateEngine.process("global-report",context);
-        try {
-            pdfGenerator.htmlToPdf(strHtml,"user");
-        } catch (IOException e) {
-            LoggingFile.exceptionStringz("UserService",
-                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        pdfGenerator.htmlToPdf(strHtml,"user",response);
+    }
+
+    public void generateReportToPDFManual(String column, String value, HttpServletRequest request, HttpServletResponse response) {
+        Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
+        List<User> userList = null;
+        String strHtml = null;
+        Map<String,Object> map = new HashMap<>();//untuk collection data di thymeleaf
+        switch (column){
+            case "nama-lengkap": userList = userRepo.findByNamaLengkapContainingIgnoreCase(value);break;
+            case "alamat": userList = userRepo.findByAlamatContainingIgnoreCase(value);break;
+            case "email": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
+            case "username": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
+            case "no-hp": userList = userRepo.findByNoHpContainingIgnoreCase(value);break;
+            case "tanggal-lahir": userList = userRepo.findByTanggalLahirContainingIgnoreCase(value);break;
+            default:userList = userRepo.findAll();break;
         }
+        List<ReportUserDTO> reportUserDTOList = convertToReportUserDTO(userList);
+        if (reportUserDTOList.isEmpty()) {
+            GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
+            return;
+        }
+        Context context = new Context();
+//        map.put("listKolom",listTampungSebentar);//KOLOM DIHARDCODE DI TEMPLATE HTML NYA
+//        map.put("listHelper",listHelper);//tidak perlu lagi karena sudah dimapping manual di html
+        map.put("listContent",reportUserDTOList);
+        map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
+        map.put("username",payloadJwt.get("namaLengkap"));
+        map.put("totalData",reportUserDTOList.size());
+        map.put("title","REPORT USER");
+        context.setVariables(map);
+        strHtml = springTemplateEngine.process("user/userreport",context);//path ke html report nya
+        pdfGenerator.htmlToPdf(strHtml,"user",response);
     }
 
     public com.juaracoding.dto.response.RespUserDTO convertToUserDTO(User groupUser){
@@ -309,11 +343,16 @@ public class UserService implements IService<User> {
         return modelMapper.map(groupUserDTO, User.class);
     }
 
+    /** khusus mapping untuk report */
+    public List<ReportUserDTO> convertToReportUserDTO(List<User> userList){
+        return modelMapper.map(userList, new TypeToken<List<ReportUserDTO>>(){}.getType());
+    }
+
     public User convertToEntity(RegisDTO regisDTO){
         return modelMapper.map(regisDTO, User.class);
     }
 
-    public List<com.juaracoding.dto.response.RespUserDTO> convertToListRespUserDTO(List<User> groupUserList){
-        return modelMapper.map(groupUserList,new TypeToken<List<com.juaracoding.dto.response.RespUserDTO>>(){}.getType());
+    public List<RespUserDTO> convertToListRespUserDTO(List<User> groupUserList){
+        return modelMapper.map(groupUserList,new TypeToken<List<RespUserDTO>>(){}.getType());
     }
 }

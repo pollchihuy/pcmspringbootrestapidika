@@ -2,18 +2,17 @@ package com.juaracoding.service;
 
 import com.juaracoding.config.OtherConfig;
 import com.juaracoding.core.IService;
-import com.juaracoding.dto.response.RespGroupMenuDTO;
+import com.juaracoding.dto.report.ReportMenuDTO;
 import com.juaracoding.dto.response.RespMenuDTO;
 import com.juaracoding.dto.validasi.ValMenuDTO;
-import com.juaracoding.model.GroupMenu;
 import com.juaracoding.model.Menu;
 import com.juaracoding.repo.MenuRepo;
 import com.juaracoding.util.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-import org.apache.commons.io.FileUtils;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,8 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -42,7 +39,6 @@ public class MenuService implements IService<Menu> {
     @Autowired
     private MenuRepo menuRepo;
 
-    @Autowired
     private ModelMapper modelMapper ;
 
     @Autowired
@@ -56,10 +52,27 @@ public class MenuService implements IService<Menu> {
 
     private StringBuilder sBuild = new StringBuilder();
 
+    //kita buat property baru di mapper
+    private PropertyMap<Menu, ReportMenuDTO> propMenuToReport;
+
+    /** masukkan informasi apapun nantinya ke dalam properties
+     * jadi jika kita ingin menggunakan report
+     * bisa dilakukan berkali-kali tanpa harus new PropertyMap lagi untuk object yang sama
+     * jika relasi object nya bersarang
+     * untuk kasus ini saya ingin menampilkan nama group menu saja di report menu
+     */
+    public MenuService() {
+        modelMapper = new ModelMapper();
+        propMenuToReport = new PropertyMap<Menu,ReportMenuDTO>() {
+            protected void configure() {
+                map().setNamaGroup(source.getGroupMenu().getName());
+            }
+        };
+        modelMapper.addMappings(propMenuToReport);
+    }
 
     @Override
     public ResponseEntity<Object> save(Menu menu, HttpServletRequest request) {
-
         if(menu==null){
             return GlobalFunction.validasiGagal("OBJECT NULL","FV002002002",request);
         }
@@ -70,7 +83,6 @@ public class MenuService implements IService<Menu> {
             LoggingFile.exceptionStringz("MenuService","save",e,OtherConfig.getFlagLogging());
             return GlobalFunction.dataGagalDisimpan("FE002002002",request);
         }
-
         return GlobalFunction.dataBerhasilDisimpan(request);
     }
 
@@ -195,8 +207,8 @@ public class MenuService implements IService<Menu> {
             case "name": menuList = menuRepo.findByNamaContainsIgnoreCase(value);break;
             default:menuList = menuRepo.findAll();break;
         }
-        List<com.juaracoding.dto.response.RespMenuDTO> listRespMenu = convertToListRespMenuDTO(menuList);
-        if (listRespMenu.isEmpty()) {
+        List<RespMenuDTO> listReportMenu = convertToListRespMenuDTO(menuList);
+        if (listReportMenu.isEmpty()) {
             GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
             return;
         }
@@ -211,12 +223,12 @@ public class MenuService implements IService<Menu> {
         response.setContentType("application/octet-stream");
 
         String [] strHeaderArr = {"ID","NAMA MENU"};
-        String[][] strBody = new String[listRespMenu.size()][strHeaderArr.length];
+        String[][] strBody = new String[listReportMenu.size()][strHeaderArr.length];
         String strIdMenu = "";// VARIABLE UNTUK MEMFILTER DATA NYA TERLEBIH DAHULU
         String strNamaMenu = "";// VARIABLE UNTUK MEMFILTER DATA NYA TERLEBIH DAHULU
-        for (int i = 0; i < listRespMenu.size(); i++) {
-            strIdMenu = listRespMenu.get(i).getId() == null ? "-" : String.valueOf(listRespMenu.get(i).getId());//null handling
-            strNamaMenu = listRespMenu.get(i).getNama() == null ? "-" : listRespMenu.get(i).getNama();//null handling
+        for (int i = 0; i < listReportMenu.size(); i++) {
+            strIdMenu = listReportMenu.get(i).getId() == null ? "-" : String.valueOf(listReportMenu.get(i).getId());//null handling
+            strNamaMenu = listReportMenu.get(i).getNama() == null ? "-" : listReportMenu.get(i).getNama();//null handling
             strBody[i][0] = strIdMenu;
             strBody[i][1] = strNamaMenu;
         }
@@ -224,65 +236,84 @@ public class MenuService implements IService<Menu> {
     }
 
     public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
+        Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
         List<Menu> menuList = null;
         switch (column){
             case "name": menuList = menuRepo.findByNamaContainsIgnoreCase(value);break;
             default:menuList = menuRepo.findAll();break;
         }
-        List<RespMenuDTO> listRespMenu = convertToListRespMenuDTO(menuList);
-        if (listRespMenu.isEmpty()) {
+        List<ReportMenuDTO> reportMenuDTOList = convertToReportMenuDTO(menuList);
+        if (reportMenuDTOList.isEmpty()) {
             GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
             return;
-        }
-        try {
-            FileUtils.forceMkdir(new File(OtherConfig.getPathGeneratePDF()));
-        } catch (IOException e) {
-            LoggingFile.exceptionStringz("MenuService",
-                    "generateToPDF",e,OtherConfig.getFlagLogging());
         }
         Map<String,Object> map = new HashMap<>();
         String strHtml = null;
         Context context = new Context();
-        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new RespGroupMenuDTO());
+        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new ReportMenuDTO());
         List<String> listTampungSebentar = new ArrayList<>();
         List<String> listHelper = new ArrayList<>();
-
         for (Map.Entry<String,Object> entry : mapColumnName.entrySet()) {
-            listTampungSebentar.add(GlobalFunction.camelToStandar(entry.getKey()));
-            listHelper.add(entry.getKey());
+            listTampungSebentar.add(GlobalFunction.camelToStandar(entry.getKey()));//untuk header di report nanti
+            listHelper.add(entry.getKey());//untuk compas agar peletakkan data nya sesuai dengan kolom di report nanti
         }
         Map<String,Object> mapTampung = null;
         List<Map<String,Object>> listMap = new ArrayList<>();
-        for (int i = 0; i < listRespMenu.size(); i++) {
-            mapTampung = GlobalFunction.convertClassToObject(listRespMenu.get(i),null);
+        for (int i = 0; i < reportMenuDTOList.size(); i++) {
+            mapTampung = GlobalFunction.convertClassToObject(reportMenuDTOList.get(i),null);
             listMap.add(mapTampung);
         }
         map.put("listKolom",listTampungSebentar);
         map.put("listContent",listMap);
         map.put("listHelper",listHelper);
         map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
-        map.put("username","pollchihuy");//saat ini saya hardcode , nanti diambil dari value di token yah
-        map.put("totalData",listRespMenu.size());
+        map.put("username",payloadJwt.get("namaLengkap"));
+        map.put("totalData",reportMenuDTOList.size());
         map.put("title","REPORT MENU");
         context.setVariables(map);
         strHtml = springTemplateEngine.process("global-report",context);
-        try {
-            pdfGenerator.htmlToPdf(strHtml,"menu");
-        } catch (IOException e) {
-            LoggingFile.exceptionStringz("MenuService",
-                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        pdfGenerator.htmlToPdf(strHtml,"menu",response);
+    }
+
+    public void generateToPDFManual(String column, String value, HttpServletRequest request, HttpServletResponse response){
+        Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
+        List<Menu> menuList = null;
+        Context context = new Context();
+        Map<String,Object> map = new HashMap<>();
+        switch (column){
+            case "name": menuList = menuRepo.findByNamaContainsIgnoreCase(value);break;
+            default:menuList = menuRepo.findAll();break;
         }
+        List<ReportMenuDTO> listReportMenu = convertToReportMenuDTO(menuList);
+        if (listReportMenu.isEmpty()) {
+            GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
+            return;
+        }
+        String strHtml = null;
+        map.put("listContent",listReportMenu);
+        map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
+        map.put("username",payloadJwt.get("namaLengkap"));
+        map.put("totalData",listReportMenu.size());
+        map.put("title","REPORT MENU");
+        context.setVariables(map);
+        strHtml = springTemplateEngine.process("menu/menureport",context);//path untuk akses html nya
+        pdfGenerator.htmlToPdf(strHtml,"menu",response);
     }
 
-    public com.juaracoding.dto.response.RespMenuDTO convertToMenuDTO(Menu groupMenu){
-        return modelMapper.map(groupMenu, com.juaracoding.dto.response.RespMenuDTO.class);
+    public RespMenuDTO convertToMenuDTO(Menu groupMenu){
+        return modelMapper.map(groupMenu, RespMenuDTO.class);
     }
 
-    public Menu convertToEntity(ValMenuDTO groupMenuDTO){
-        return modelMapper.map(groupMenuDTO, Menu.class);
+    /** khusus mapping untuk report dengan object yang bersarang */
+    public List<ReportMenuDTO> convertToReportMenuDTO(List<Menu> menuList){
+        return modelMapper.map(menuList, new TypeToken<List<ReportMenuDTO>>(){}.getType());
     }
 
-    public List<com.juaracoding.dto.response.RespMenuDTO> convertToListRespMenuDTO(List<Menu> groupMenuList){
-        return modelMapper.map(groupMenuList,new TypeToken<List<com.juaracoding.dto.response.RespMenuDTO>>(){}.getType());
+    public Menu convertToEntity(ValMenuDTO menuDTO){
+        return modelMapper.map(menuDTO, Menu.class);
+    }
+
+    public List<RespMenuDTO> convertToListRespMenuDTO(List<Menu> menuList){
+        return modelMapper.map(menuList,new TypeToken<List<RespMenuDTO>>(){}.getType());
     }
 }

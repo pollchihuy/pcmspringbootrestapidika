@@ -76,7 +76,6 @@ public class ExcelWriter {
                 workbook.close();
                 outputStream.close();
             } catch (IOException e) {
-                e.printStackTrace();
                 LoggingFile.exceptionStringz("Excel Writer","writeToExcel", e, OtherConfig.getFlagLogging());
             }
         }

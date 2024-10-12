@@ -81,11 +81,9 @@ public class UserController {
         sort   = sort.equalsIgnoreCase("desc")?"desc":"asc";
         Object objSortBy = mapSorting.get(sortBy);
         objSortBy = mapSorting.get(sortBy)==null?defaultSortingColumnGroupMenu:mapSorting.get(sortBy);
-//        Pageable pageable =  PageRequest.of(page,
-//        (size==null)?10:size,
-//        sort.equals("desc")?Sort.by(sortBy).descending():Sort.by(sortBy)
-        Pageable pageable =  PageRequest.of(page,size,
-                Sort.by("id"));
+        Pageable pageable =  PageRequest.of(page,
+                (size==null)?10:size,
+                sort.equals("desc")?Sort.by(objSortBy.toString()).descending():Sort.by(sortBy));
         return userService.findAll(pageable,request);
     }
 
@@ -97,6 +95,7 @@ public class UserController {
         return userService.uploadDataExcel(csvFile,request);
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/v1/download-sheet")
     public void downloadSheet(
             HttpServletRequest request,
@@ -106,6 +105,8 @@ public class UserController {
     ){
         userService.downloadReportExcel(kolom, nilai,request,response);
     }
+
+    @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/v1/download-pdf")
     public void downloadPDF(
             HttpServletRequest request,
@@ -114,5 +115,16 @@ public class UserController {
             @RequestParam(value = "val") String nilai
     ){
         userService.generateToPDF(kolom, nilai,request,response);
+    }
+
+    @PreAuthorize("hasAuthority('USER')")
+    @GetMapping("/v1/download-pdf-manual")
+    public void downloadPDFManual(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam(value = "col") String kolom,
+            @RequestParam(value = "val") String nilai
+    ){
+        userService.generateReportToPDFManual(kolom, nilai,request,response);
     }
 }

@@ -2,6 +2,7 @@ package com.juaracoding.service;
 
 import com.juaracoding.config.OtherConfig;
 import com.juaracoding.core.IService;
+import com.juaracoding.dto.report.ReportAksesDTO;
 import com.juaracoding.dto.response.RespAksesDTO;
 import com.juaracoding.dto.response.RespAksesDTO;
 import com.juaracoding.dto.response.RespMenuDTO;
@@ -189,7 +190,7 @@ public class AksesService implements IService<Akses> {
     public void downloadReportExcel(String filterBy, String value, HttpServletRequest request, HttpServletResponse response) {
         List<Akses> menuList = null;
         switch (filterBy){
-            case "name": menuList = aksesRepo.findByNamaContainingIgnoreCase(value);break;
+            case "nama": menuList = aksesRepo.findByNamaContainingIgnoreCase(value);break;
             default:menuList = aksesRepo.findAll();break;
         }
         List<RespAksesDTO> listRespAkses = convertToListRespAksesDTO(menuList);
@@ -221,26 +222,21 @@ public class AksesService implements IService<Akses> {
     }
 
     public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
+        Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
         List<Akses> aksesList = null;
         switch (column){
-            case "name": aksesList = aksesRepo.findByNamaContainingIgnoreCase(value);break;
+            case "nama": aksesList = aksesRepo.findByNamaContainingIgnoreCase(value);break;
             default:aksesList = aksesRepo.findAll();break;
         }
-        List<RespAksesDTO> listRespMenu = convertToListRespAksesDTO(aksesList);
-        if (listRespMenu.isEmpty()) {
+        List<ReportAksesDTO> listReportAkses = convertToReportAksesDTO(aksesList);
+        if (listReportAkses.isEmpty()) {
             GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
             return;
-        }
-        try {
-            FileUtils.forceMkdir(new File(OtherConfig.getPathGeneratePDF()));
-        } catch (IOException e) {
-            LoggingFile.exceptionStringz("AksesService",
-                    "generateToPDF",e,OtherConfig.getFlagLogging());
         }
         Map<String,Object> map = new HashMap<>();
         String strHtml = null;
         Context context = new Context();
-        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new RespAksesDTO());
+        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new ReportAksesDTO());
         List<String> listTampungSebentar = new ArrayList<>();
         List<String> listHelper = new ArrayList<>();
         for (Map.Entry<String,Object> entry : mapColumnName.entrySet()) {
@@ -249,29 +245,54 @@ public class AksesService implements IService<Akses> {
         }
         Map<String,Object> mapTampung = null;
         List<Map<String,Object>> listMap = new ArrayList<>();
-        for (int i = 0; i < listRespMenu.size(); i++) {
-            mapTampung = GlobalFunction.convertClassToObject(listRespMenu.get(i),null);
+        for (int i = 0; i < listReportAkses.size(); i++) {
+            mapTampung = GlobalFunction.convertClassToObject(listReportAkses.get(i),null);
             listMap.add(mapTampung);
         }
         map.put("listKolom",listTampungSebentar);
         map.put("listContent",listMap);
         map.put("listHelper",listHelper);
         map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
-        map.put("username","pollchihuy");//saat ini saya hardcode , nanti diambil dari value di token yah
-        map.put("totalData",listRespMenu.size());
+        map.put("username",payloadJwt.get("namaLengkap"));
+        map.put("totalData",listReportAkses.size());
         map.put("title","REPORT AKSES");
         context.setVariables(map);
         strHtml = springTemplateEngine.process("global-report",context);
-        try {
-            pdfGenerator.htmlToPdf(strHtml,"akses");
-        } catch (IOException e) {
-            LoggingFile.exceptionStringz("AksesService",
-                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        pdfGenerator.htmlToPdf(strHtml,"akses",response);
+    }
+
+    public void generateToPDFManual(String column, String value, HttpServletRequest request, HttpServletResponse response){
+        Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
+        List<Akses> aksesList = null;
+        Context context = new Context();
+        switch (column){
+            case "nama": aksesList = aksesRepo.findByNamaContainingIgnoreCase(value);break;
+            default:aksesList = aksesRepo.findAll();break;
         }
+        List<ReportAksesDTO> listReportAkses = convertToReportAksesDTO(aksesList);
+        if (listReportAkses.isEmpty()) {
+            GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
+            return;
+        }
+        Map<String,Object> map = new HashMap<>();
+        String strHtml = null;
+        map.put("listContent",listReportAkses);
+        map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
+        map.put("username",payloadJwt.get("namaLengkap"));
+        map.put("totalData",listReportAkses.size());
+        map.put("title","REPORT AKSES");
+        context.setVariables(map);
+        strHtml = springTemplateEngine.process("akses/aksesreport",context);
+        pdfGenerator.htmlToPdf(strHtml,"akses",response);
     }
 
     public RespAksesDTO convertToAksesDTO(Akses groupAkses){
         return modelMapper.map(groupAkses, RespAksesDTO.class);
+    }
+
+    /** khusus mapping untuk report */
+    public List<ReportAksesDTO> convertToReportAksesDTO(List<Akses> listAkses){
+        return modelMapper.map(listAkses, new TypeToken<List<ReportAksesDTO>>(){}.getType());
     }
 
     public Akses convertToEntity(ValAksesDTO groupAksesDTO){

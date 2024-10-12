@@ -2,10 +2,15 @@ package com.juaracoding.service;
 
 import com.juaracoding.config.OtherConfig;
 import com.juaracoding.core.IService;
+import com.juaracoding.dto.report.ReportAksesDTO;
+import com.juaracoding.dto.report.ReportGroupMenuDTO;
+import com.juaracoding.dto.report.ReportMenuDTO;
 import com.juaracoding.dto.response.RespGroupMenuDTO;
 import com.juaracoding.dto.validasi.ValGroupMenuDTO;
 import com.juaracoding.handler.ResponseHandler;
+import com.juaracoding.model.Akses;
 import com.juaracoding.model.GroupMenu;
+import com.juaracoding.model.Menu;
 import com.juaracoding.repo.GroupMenuRepo;
 import com.juaracoding.util.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -199,7 +204,6 @@ public class GroupMenuService implements IService<GroupMenu> {
             GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
             return;
         }
-        sBuild.setLength(0);
         String headerKey = "Content-Disposition";
         sBuild.setLength(0);
 
@@ -234,25 +238,22 @@ public class GroupMenuService implements IService<GroupMenu> {
 
     public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
         List<GroupMenu> groupMenuList = null;
+        Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
         switch (column){
             case "name": groupMenuList = groupMenuRepo.findByNameContainsIgnoreCase(value);break;
             default:groupMenuList = groupMenuRepo.findAll();break;
         }
-        List<RespGroupMenuDTO> listRespGroupMenu = convertToListRespGroupMenuDTO(groupMenuList);
+        List<ReportGroupMenuDTO> listRespGroupMenu = convertToReportGroupMenuDTO(groupMenuList);
         if (listRespGroupMenu.isEmpty()) {
             GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
             return;
         }
-        try {
-            FileUtils.forceMkdir(new File(OtherConfig.getPathGeneratePDF()));
-        } catch (IOException e) {
-            LoggingFile.exceptionStringz("GroupMenuService",
-                    "generateToPDF",e,OtherConfig.getFlagLogging());
-        }
+        sBuild.setLength(0);
+        /** object penampung untuk thymeleaf nanti */
         Map<String,Object> map = new HashMap<>();
         String strHtml = null;
         Context context = new Context();
-        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new RespGroupMenuDTO());
+        Map<String,Object> mapColumnName = GlobalFunction.convertClassToObject(new ReportGroupMenuDTO());
         List<String> listTampungSebentar = new ArrayList<>();
         List<String> listHelper = new ArrayList<>();
         for (Map.Entry<String,Object> entry : mapColumnName.entrySet()) {
@@ -269,21 +270,46 @@ public class GroupMenuService implements IService<GroupMenu> {
         map.put("listContent",listMap);
         map.put("listHelper",listHelper);
         map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
-        map.put("username","pollchihuy");//saat ini saya hardcode , nanti diambil dari value di token yah
+        map.put("username",payloadJwt.get("namaLengkap"));
         map.put("totalData",listRespGroupMenu.size());
         map.put("title","REPORT GROUP MENU");
         context.setVariables(map);
         strHtml = springTemplateEngine.process("global-report",context);
-        try {
-            pdfGenerator.htmlToPdf(strHtml,"group-menu");
-        } catch (IOException e) {
-            LoggingFile.exceptionStringz("GroupMenuService",
-                    "generateToPDF",e,OtherConfig.getFlagLogging());
+        pdfGenerator.htmlToPdf(strHtml,"group-menu",response);
+    }
+
+    public void generateToPDFManual(String column, String value, HttpServletRequest request, HttpServletResponse response){
+        Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
+        List<GroupMenu> groupMenuList = null;
+        Context context = new Context();
+        Map<String,Object> map = new HashMap<>();
+        switch (column){
+            case "name": groupMenuList = groupMenuRepo.findByNameContainsIgnoreCase(value);break;
+            default:groupMenuList = groupMenuRepo.findAll();break;
         }
+        List<ReportGroupMenuDTO> listReportGroupMenu = convertToReportGroupMenuDTO(groupMenuList);
+        if (listReportGroupMenu.isEmpty()) {
+            GlobalFunction.manualResponse(response,GlobalFunction.dataTidakDitemukan(request));
+            return;
+        }
+        String strHtml = null;
+        map.put("listContent",listReportGroupMenu);
+        map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
+        map.put("username",payloadJwt.get("namaLengkap"));
+        map.put("totalData",listReportGroupMenu.size());
+        map.put("title","REPORT MENU");
+        context.setVariables(map);
+        strHtml = springTemplateEngine.process("groupmenu/groupmenureport",context);//path untuk akses html nya
+        pdfGenerator.htmlToPdf(strHtml,"group-menu",response);
     }
 
     public RespGroupMenuDTO convertToGroupMenuDTO(GroupMenu groupMenu){
         return modelMapper.map(groupMenu, RespGroupMenuDTO.class);
+    }
+
+    /** khusus mapping untuk report */
+    public List<ReportGroupMenuDTO> convertToReportGroupMenuDTO(List<GroupMenu> groupMenuList){
+        return modelMapper.map(groupMenuList, new TypeToken<List<ReportGroupMenuDTO>>(){}.getType());
     }
 
     public GroupMenu convertToEntity(ValGroupMenuDTO groupMenuDTO){

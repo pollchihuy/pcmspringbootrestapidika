@@ -87,15 +87,12 @@ public class GroupMenuController {
             HttpServletRequest request
     ){
         page = (page==null)?0:page;
-        /** function yang bersifat global di paging , untuk memberikan default jika data request tidak mengirim format sort dengan benar asc/desc */
         sort   = sort.equalsIgnoreCase("desc")?"desc":"asc";
         Object objSortBy = mapSorting.get(sortBy);
         objSortBy = mapSorting.get(sortBy)==null?defaultSortingColumnGroupMenu:mapSorting.get(sortBy);
-//        Pageable pageable =  PageRequest.of(page,
-//        (size==null)?10:size,
-//        sort.equals("desc")?Sort.by(sortBy).descending():Sort.by(sortBy)
-        Pageable pageable =  PageRequest.of(page,size,
-                Sort.by("id"));
+        Pageable pageable =  PageRequest.of(page,
+                (size==null)?10:size,
+                sort.equals("desc")?Sort.by(objSortBy.toString()).descending():Sort.by(sortBy));
         return groupMenuService.findAll(pageable,request);
     }
 
@@ -107,6 +104,7 @@ public class GroupMenuController {
         return groupMenuService.uploadDataExcel(csvFile,request);
     }
 
+    @PreAuthorize("hasAuthority('GROUP-MENU')")
     @GetMapping("/v1/download-sheet")
     public void downloadSheet(
             HttpServletRequest request,
@@ -117,8 +115,20 @@ public class GroupMenuController {
         groupMenuService.downloadReportExcel(kolom, nilai,request,response);
     }
 
+    @PreAuthorize("hasAuthority('GROUP-MENU')")
     @GetMapping("/v1/download-pdf")
     public void downloadPDF(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam(value = "col") String kolom,
+            @RequestParam(value = "val") String nilai
+    ){
+        groupMenuService.generateToPDF(kolom, nilai,request,response);
+    }
+
+    @PreAuthorize("hasAuthority('GROUP-MENU')")
+    @GetMapping("/v1/download-pdf-manual")
+    public void downloadPDFManual(
             HttpServletRequest request,
             HttpServletResponse response,
             @RequestParam(value = "col") String kolom,

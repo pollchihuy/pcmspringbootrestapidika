@@ -21,14 +21,15 @@ public class JwtUtility implements Serializable {
      * Yang dapat di claims disini adalah key yang diinput dari api Login
      */
     public Map<String,Object> mappingBodyToken(String token,
-                                                  Map<String,Object> mapz,
-                                                  String modulCode){
-        /** claims adalah data payload yang ada di token */
+                                                  Map<String,Object> mapz){
+        /** claims adalah data payload yang ada di token
+         * PASTIKAN YANG DIISI SAAT PROSES LOGIN SAMA SAAT PROSES CLAIMS
+         */
         Claims claims = getAllClaimsFromToken(token);
-        mapz.put("uid",claims.get("uid"));
-        mapz.put("un",claims.getSubject());//untuk subject / username sudah ada di claims token JWT
-        mapz.put("ml",claims.get("ml"));//untuk email
-        mapz.put("pn",claims.get("pn"));
+        mapz.put("userId",claims.get("uid"));
+        mapz.put("email",claims.get("ml"));//untuk email
+        mapz.put("namaLengkap",claims.get("nl"));
+        mapz.put("noHp",claims.get("pn"));
 
         return mapz;
     }

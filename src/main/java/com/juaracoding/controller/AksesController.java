@@ -88,15 +88,13 @@ public class AksesController {
             HttpServletRequest request
     ){
         page = (page==null)?0:page;
-        /** function yang bersifat global di paging , untuk memberikan default jika data request tidak mengirim format sort dengan benar asc/desc */
         sort   = sort.equalsIgnoreCase("desc")?"desc":"asc";
         Object objSortBy = mapSorting.get(sortBy);
         objSortBy = mapSorting.get(sortBy)==null?defaultSortingColumnGroupMenu:mapSorting.get(sortBy);
-//        Pageable pageable =  PageRequest.of(page,
-//        (size==null)?10:size,
-//        sort.equals("desc")?Sort.by(sortBy).descending():Sort.by(sortBy)
-        Pageable pageable =  PageRequest.of(page,size,
-                Sort.by("id"));
+        Pageable pageable =  PageRequest.of(page,
+        (size==null)?10:size,
+        sort.equals("desc")?Sort.by(objSortBy.toString()).descending():Sort.by(sortBy));
+
         return aksesService.findAll(pageable,request);
     }
 
@@ -108,6 +106,7 @@ public class AksesController {
         return aksesService.uploadDataExcel(csvFile,request);
     }
 
+    @PreAuthorize("hasAuthority('AKSES')")
     @GetMapping("/v1/download-sheet")
     public void downloadSheet(
             HttpServletRequest request,
@@ -118,8 +117,20 @@ public class AksesController {
         aksesService.downloadReportExcel(kolom, nilai,request,response);
     }
 
+    @PreAuthorize("hasAuthority('AKSES')")
     @GetMapping("/v1/download-pdf")
     public void downloadPDF(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam(value = "col") String kolom,
+            @RequestParam(value = "val") String nilai
+    ){
+        aksesService.generateToPDF(kolom, nilai,request,response);
+    }
+
+    @PreAuthorize("hasAuthority('AKSES')")
+    @GetMapping("/v1/download-pdf-manual")
+    public void downloadPDFManual(
             HttpServletRequest request,
             HttpServletResponse response,
             @RequestParam(value = "col") String kolom,
