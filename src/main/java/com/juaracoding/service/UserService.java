@@ -171,6 +171,8 @@ public class UserService implements IService<User> {
                 case "email": page = userRepo.findByEmailContainingIgnoreCase(pageable,value);break;
                 case "username": page = userRepo.findByEmailContainingIgnoreCase(pageable,value);break;
                 case "no-hp": page = userRepo.findByNoHpContainingIgnoreCase(pageable,value);break;
+                case "tanggal-lahir": page = userRepo.findByTanggalLahirContainingIgnoreCase("%"+value+"%",pageable);break;
+                case "umur": page = userRepo.cariUmur("%"+value+"%",pageable);break;
                 default:page = userRepo.findAll(pageable);break;
             }
             list = page.getContent();
@@ -229,8 +231,8 @@ public class UserService implements IService<User> {
             case "email": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
             case "username": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
             case "no-hp": userList = userRepo.findByNoHpContainingIgnoreCase(value);break;
-            case "tanggal-lahir": userList = userRepo.findByTanggalLahirContainingIgnoreCase(value);break;
-
+            case "tanggal-lahir": userList = userRepo.findByTanggalLahirContainingIgnoreCase("%"+value+"%");break;
+            case "umur": userList = userRepo.cariUmur("%"+value+"%");break;
             default:userList = userRepo.findAll();break;
         }
         List<com.juaracoding.dto.response.RespUserDTO> listRespUser = convertToListRespUserDTO(userList);
@@ -271,7 +273,8 @@ public class UserService implements IService<User> {
             case "email": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
             case "username": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
             case "no-hp": userList = userRepo.findByNoHpContainingIgnoreCase(value);break;
-            case "tanggal-lahir": userList = userRepo.findByTanggalLahirContainingIgnoreCase(value);break;
+            case "tanggal-lahir": userList = userRepo.findByTanggalLahirContainingIgnoreCase("%"+value+"%");break;
+            case "umur": userList = userRepo.cariUmur("%"+value+"%");break;
             default:userList = userRepo.findAll();break;
         }
         List<ReportUserDTO> listRespMenu = convertToReportUserDTO(userList);
@@ -333,7 +336,8 @@ public class UserService implements IService<User> {
             case "email": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
             case "username": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
             case "no-hp": userList = userRepo.findByNoHpContainingIgnoreCase(value);break;
-            case "tanggal-lahir": userList = userRepo.findByTanggalLahirContainingIgnoreCase(value);break;
+            case "tanggal-lahir": userList = userRepo.findByTanggalLahirContainingIgnoreCase("%"+value+"%");break;
+            case "umur": userList = userRepo.cariUmur("%"+value+"%");break;
             default:userList = userRepo.findAll();break;
         }
         List<ReportUserDTO> reportUserDTOList = convertToReportUserDTO(userList);

@@ -123,7 +123,7 @@ public class AppUserDetailService implements UserDetailsService {
         mapForClaims.put("nl",nextUser.getNamaLengkap());//payload
         mapForClaims.put("pn",nextUser.getNoHp());//payload
         String token = jwtUtility.generateToken(userDetails,mapForClaims);
-        System.out.println("TOKEN MASIH IJO : "+token);
+//        System.out.println("TOKEN MASIH IJO : "+token);
         m.put("token", Crypto.performEncrypt(token));
 //        m.put("token", token);
         /** end jwt config */

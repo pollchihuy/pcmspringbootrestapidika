@@ -25,12 +25,17 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    private Map<String,Object> mapSorting = new HashMap<>();
+    private Map<String,Object> sortMap = new HashMap<>();
     private final String defaultSortingColumnGroupMenu = "id";
 
     private void mapSorting()
     {
-        mapSorting.put("nama","group");
+        sortMap.put("nama","namaLengkap");
+        sortMap.put("tanggal-lahir","tanggalLahir");
+        sortMap.put("alamat","alamat");
+        sortMap.put("username","username");
+        sortMap.put("no-hp","noHp");
+        sortMap.put("umur","umur");
     }
 
     @PreAuthorize("hasAuthority('USER')")
@@ -79,12 +84,33 @@ public class UserController {
         page = (page==null)?0:page;
         /** function yang bersifat global di paging , untuk memberikan default jika data request tidak mengirim format sort dengan benar asc/desc */
         sort   = sort.equalsIgnoreCase("desc")?"desc":"asc";
-        Object objSortBy = mapSorting.get(sortBy);
-        objSortBy = mapSorting.get(sortBy)==null?defaultSortingColumnGroupMenu:mapSorting.get(sortBy);
+        Object objSortBy = sortMap.get(sortBy);
+        objSortBy = sortMap.get(sortBy)==null?defaultSortingColumnGroupMenu: sortMap.get(sortBy);
         Pageable pageable =  PageRequest.of(page,
                 (size==null)?10:size,
                 sort.equals("desc")?Sort.by(objSortBy.toString()).descending():Sort.by(sortBy));
         return userService.findAll(pageable,request);
+    }
+
+    @GetMapping("/v1/{page}/{sort}/{sort-by}")
+    public ResponseEntity<Object> findByParam(
+            @PathVariable(value = "page") Integer page,//page yang ke ?
+            @PathVariable(value = "sort") String sort,//asc desc
+            @PathVariable(value = "sort-by") String sortBy,// column Name in java Variable,
+            @RequestParam("size") Integer size,
+            @RequestParam("col") String column,
+            @RequestParam("val") String value,
+            HttpServletRequest request
+    ){
+        page = (page==null)?0:page;
+        sort   = sort.equalsIgnoreCase("desc")?"desc":"asc";
+        Object objSortBy = sortMap.get(sortBy);
+        objSortBy = sortMap.get(sortBy)==null?defaultSortingColumnGroupMenu: sortMap.get(sortBy);
+        Pageable pageable =  PageRequest.of(page,
+                (size==null)?10:size,
+                sort.equals("desc")?Sort.by(objSortBy.toString()).descending():Sort.by(sortBy));
+
+        return userService.findByParam(pageable,column,value,request);
     }
 
     @PostMapping("/v1/upload-sheet")

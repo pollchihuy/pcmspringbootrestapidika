@@ -1,0 +1,17 @@
+version : "3.8"
+services :
+    springbima :
+        container_name : cntspringbp
+        image : springbp:1.0
+        ports :
+            - 8082:8082
+
+        environment :
+        - HOST = host.docker.internal
+        - PORT = 1433
+        - DB_UNAME=sa
+        - DB_PWD=b82b0a2134f029053e8ff35f09e7b46d
+        - SHOW_SQL=true
+        - DDL_AUTO=create-drop
+        - DB_SCHEMA = SIKATA
+        - DB_NAME = BP
