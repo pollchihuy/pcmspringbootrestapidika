@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <jdk.version>17</jdk.version>
+        <jdk.version>21</jdk.version>
         <bootstrap.version>5.3.3</bootstrap.version>
         <webjars-locator.version>0.52</webjars-locator.version>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>

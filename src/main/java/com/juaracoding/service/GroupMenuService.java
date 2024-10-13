@@ -21,7 +21,9 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,8 @@ public class GroupMenuService implements IService<GroupMenu> {
     private SpringTemplateEngine springTemplateEngine;
 
     private StringBuilder sBuild = new StringBuilder();
+//    private Pageable pageableDefault =  PageRequest.of(0,
+//            5000, Sort.by("id"));
 
     @Override
     public ResponseEntity<Object> save(GroupMenu groupMenu, HttpServletRequest request) {
@@ -236,11 +240,28 @@ public class GroupMenuService implements IService<GroupMenu> {
         new ExcelWriter(strBody, headerArr,"sheet-1", response);
     }
 
+    /**
+     * Untuk kedepan nya
+     * jika ada Query dengan data yang banyak dan ingin diimport via pdf
+     * maka batasi data tersebut minimal 5000 untuk ukuran 10 kolom
+     * kalau sampai lewat 15 kolom kurangi lagi agar proses nya tidak membebani server
+     *
+     * @param column
+     * @param value
+     * @param request
+     * @param response
+     */
     public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
         List<GroupMenu> groupMenuList = null;
         Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
         switch (column){
+            /** model penulisan untuk membatas data pada function generateToPDF adalah sbb :
+             * case "name": groupMenuList = groupMenuRepo.findByNameContainsIgnoreCase(value,pageableDefault).getContent();break;
+             * pageableDefault sudah di declare contoh nya di deklarasi public variable, untuk membatasi data minimal 5000 data yang akan tercetak di PDF
+             */
+//            case "name": groupMenuList = groupMenuRepo.findByNameContainsIgnoreCase(value);break;
             case "name": groupMenuList = groupMenuRepo.findByNameContainsIgnoreCase(value);break;
+
             default:groupMenuList = groupMenuRepo.findAll();break;
         }
         List<ReportGroupMenuDTO> listRespGroupMenu = convertToReportGroupMenuDTO(groupMenuList);

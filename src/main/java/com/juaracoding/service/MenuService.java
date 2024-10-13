@@ -52,6 +52,9 @@ public class MenuService implements IService<Menu> {
 
     private StringBuilder sBuild = new StringBuilder();
 
+    //    private Pageable pageableDefault =  PageRequest.of(0,
+//            5000, Sort.by("id"));
+
     //kita buat property baru di mapper
     private PropertyMap<Menu, ReportMenuDTO> propMenuToReport;
 
@@ -200,10 +203,26 @@ public class MenuService implements IService<Menu> {
         return list;
     }
 
+
+    /**
+     * Untuk kedepan nya
+     * jika ada Query dengan data yang banyak dan ingin diimport via pdf
+     * maka batasi data tersebut minimal 5000 untuk ukuran 10 kolom
+     * kalau sampai lewat 15 kolom kurangi lagi agar proses nya tidak membebani server
+     *
+     * @param column
+     * @param value
+     * @param request
+     * @param response
+     */
     @Override
-    public void downloadReportExcel(String filterBy, String value, HttpServletRequest request, HttpServletResponse response) {
+    public void downloadReportExcel(String column, String value, HttpServletRequest request, HttpServletResponse response) {
         List<Menu> menuList = null;
-        switch (filterBy){
+        switch (column){
+            /** model penulisan untuk membatas data pada function generateToPDF adalah sbb :
+             * case "name": menuList = menuRepo.findByNamaContainsIgnoreCase(value,pageableDefault).getContent();break;
+             * pageableDefault sudah di declare contoh nya di deklarasi public variable, untuk membatasi data minimal 5000 data yang akan tercetak di PDF
+             */
             case "name": menuList = menuRepo.findByNamaContainsIgnoreCase(value);break;
             default:menuList = menuRepo.findAll();break;
         }
@@ -275,12 +294,28 @@ public class MenuService implements IService<Menu> {
         pdfGenerator.htmlToPdf(strHtml,"menu",response);
     }
 
+
+    /**
+     * Untuk kedepan nya
+     * jika ada Query dengan data yang banyak dan ingin diimport via pdf
+     * maka batasi data tersebut minimal 5000 untuk ukuran 10 kolom
+     * kalau sampai lewat 15 kolom kurangi lagi agar proses nya tidak membebani server
+     *
+     * @param column
+     * @param value
+     * @param request
+     * @param response
+     */
     public void generateToPDFManual(String column, String value, HttpServletRequest request, HttpServletResponse response){
         Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
         List<Menu> menuList = null;
         Context context = new Context();
         Map<String,Object> map = new HashMap<>();
         switch (column){
+            /** model penulisan untuk membatas data pada function generateToPDF adalah sbb :
+             * case "name": menuList = groupMenuRepo.findByNameContainsIgnoreCase(value,pageableDefault).getContent();break;
+             * pageableDefault sudah di declare contoh nya di deklarasi public variable, untuk membatasi data minimal 5000 data yang akan tercetak di PDF
+             */
             case "name": menuList = menuRepo.findByNamaContainsIgnoreCase(value);break;
             default:menuList = menuRepo.findAll();break;
         }

@@ -26,6 +26,19 @@ public class AuthController {
         return appUserDetailService.doLogin(user, request);
     }
 
+    @PostMapping("/v1/verify-user")
+    public ResponseEntity<?> verifyUser(@RequestBody @Valid VerifyUserDTO verifyUserDTO, HttpServletRequest request) {
+        User user = appUserDetailService.convertToEntity(verifyUserDTO);
+        return appUserDetailService.verifyUser(user, request);
+    }
+
+    @PostMapping("/v1/platform-login")
+    public ResponseEntity<?> platformLogin(@RequestBody @Valid LoginDTO loginDTO, HttpServletRequest request) {
+        User user = appUserDetailService.convertToEntity(loginDTO);
+        return appUserDetailService.platformLogin(user, request);
+    }
+
+
     @PostMapping("/v1/doregis")
     public ResponseEntity<Object> doRegis(@Valid @RequestBody RegisDTO regisDTO, HttpServletRequest request){
         User user = appUserDetailService.convertToEntity(regisDTO);

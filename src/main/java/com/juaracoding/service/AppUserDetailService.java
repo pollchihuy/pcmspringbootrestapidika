@@ -41,6 +41,62 @@ public class AppUserDetailService implements UserDetailsService {
 
     private Random rand = new Random();
 
+    public ResponseEntity<Object> verifyUser(User user,HttpServletRequest request){
+        String s = user.getUsername();
+        Optional<User> opUserResult = userRepo.findTop1ByUsernameOrNoHpOrEmailAndIsRegistered(s,s,s,true);
+        User nextUser = null;
+        if (!opUserResult.isPresent()) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        nextUser = opUserResult.get();
+        List<String> listAkses = new ArrayList<>();
+        List<Menu> menus = nextUser.getAkses().getMenuList();
+        if (menus.isEmpty()) {
+            GlobalFunction.customDataDitemukan("User Belum Diberi Akses",null,request);
+        }
+        for (int i = 0; i < menus.size(); i++) {
+            listAkses.add(menus.get(i).getNama());
+        }
+        m.put("akses", listAkses);
+        return GlobalFunction.customDataDitemukan("User Dikenal",m,request);
+    }
+
+    public ResponseEntity<Object> platformLogin(User user,HttpServletRequest request){
+        String s = user.getUsername();
+        Optional<User> opUserResult = userRepo.findTop1ByUsernameOrNoHpOrEmailAndIsRegistered(s,s,s,true);
+        User nextUser = null;
+        if (!opUserResult.isPresent()) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        nextUser = opUserResult.get();
+        if(!BcryptImpl.verifyHash(user.getPassword()+user.getUsername(),
+                nextUser.getPassword()))//dicombo dengan userName
+        {
+            return GlobalFunction.customReponse("X-03-031","username dan password salah",request);
+        }
+        List<String> listAkses = new ArrayList<>();
+        List<Menu> menus = nextUser.getAkses().getMenuList();
+        if (menus.isEmpty()) {
+            GlobalFunction.customDataDitemukan("User Belum Diberi Akses",null,request);
+        }
+        for (int i = 0; i < menus.size(); i++) {
+            listAkses.add(menus.get(i).getNama());
+        }
+
+        UserDetails userDetails = loadUserByUsername(user.getUsername());
+        /** start jwt config */
+        Map<String,Object> mapForClaims = new HashMap<>();
+        mapForClaims.put("uid",nextUser.getId());//payload
+        mapForClaims.put("ml",nextUser.getEmail());//payload
+        mapForClaims.put("nl",nextUser.getNamaLengkap());//payload
+        mapForClaims.put("pn",nextUser.getNoHp());//payload
+        String token = jwtUtility.generateToken(userDetails,mapForClaims);
+        /** end jwt config */
+        m.put("token", Crypto.performEncrypt(token));
+        m.put("akses", listAkses);
+        return  GlobalFunction.customDataDitemukan("Login Berhasil",m,request);
+    }
+
     /** kuota security untuk otentikasi dibedakan dengan modul lain karena modulnya digabungkan dengan global handler
      *  dikarenakan bersifat global dimana seluruh platform nantinya akan selalu melewati API ini terlebih dahulu
      *  untuk proses otentikasinya
@@ -292,6 +348,9 @@ public class AppUserDetailService implements UserDetailsService {
 
     public User convertToEntity(RegisDTO regisDTO){
         return modelMapper.map(regisDTO,User.class);
+    }
+    public User convertToEntity(VerifyUserDTO verifyUserDTO){
+        return modelMapper.map(verifyUserDTO,User.class);
     }
     public User convertToEntity(LoginDTO loginDTO){
         return modelMapper.map(loginDTO,User.class);

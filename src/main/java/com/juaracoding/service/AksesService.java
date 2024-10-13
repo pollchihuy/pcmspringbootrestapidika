@@ -221,10 +221,25 @@ public class AksesService implements IService<Akses> {
         new ExcelWriter(strBody, strHeaderArr,"sheet-1", response);
     }
 
+    /**
+     * Untuk kedepan nya
+     * jika ada Query dengan data yang banyak dan ingin diimport via pdf
+     * maka batasi data tersebut minimal 5000 untuk ukuran 10 kolom
+     * kalau sampai lewat 15 kolom kurangi lagi agar proses nya tidak membebani server
+     *
+     * @param column
+     * @param value
+     * @param request
+     * @param response
+     */
     public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
         Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
         List<Akses> aksesList = null;
         switch (column){
+            /** model penulisan untuk membatasi data pada function generateToPDF adalah sbb :
+             * case "alamat": userList = userRepo.findByNamaLengkapContainingIgnoreCase(value,pageableDefault).getContent();break;
+             * pageableDefault sudah di declare contoh nya di deklarasi public variable, untuk membatasi data minimal 5000 data yang akan tercetak di PDF
+             */
             case "nama": aksesList = aksesRepo.findByNamaContainingIgnoreCase(value);break;
             default:aksesList = aksesRepo.findAll();break;
         }

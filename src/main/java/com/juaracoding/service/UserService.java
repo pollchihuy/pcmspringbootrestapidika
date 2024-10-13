@@ -54,6 +54,9 @@ public class UserService implements IService<User> {
     //kita buat property baru di mapper
     private PropertyMap<User, ReportUserDTO> propUserToReport;
 
+    //    private Pageable pageableDefault =  PageRequest.of(0,
+//            5000, Sort.by("id"));
+
     /**
      *  user memiliki object di dalam class nya yaitu akses
      *  dimana kita ingin mengambil data object tersebut menjadi namaAkses saja
@@ -258,6 +261,7 @@ public class UserService implements IService<User> {
         new ExcelWriter(strBody, strHeaderArr,"sheet-1", response);
     }
 
+
     public void generateToPDF(String column, String value, HttpServletRequest request, HttpServletResponse response){
         List<User> userList = null;
         Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
@@ -303,12 +307,27 @@ public class UserService implements IService<User> {
         pdfGenerator.htmlToPdf(strHtml,"user",response);
     }
 
+    /**
+     * Untuk kedepan nya
+     * jika ada Query dengan data yang banyak dan ingin diimport via pdf
+     * maka batasi data tersebut minimal 5000 untuk ukuran 10 kolom
+     * kalau sampai lewat 15 kolom kurangi lagi agar proses nya tidak membebani server
+     *
+     * @param column
+     * @param value
+     * @param request
+     * @param response
+     */
     public void generateReportToPDFManual(String column, String value, HttpServletRequest request, HttpServletResponse response) {
         Map<String,Object> payloadJwt = GlobalFunction.claimsTokenBody(request);
         List<User> userList = null;
         String strHtml = null;
         Map<String,Object> map = new HashMap<>();//untuk collection data di thymeleaf
         switch (column){
+            /** model penulisan untuk membatasi data pada function generateToPDF adalah sbb :
+             * case "alamat": userList = userRepo.findByNamaLengkapContainingIgnoreCase(value,pageableDefault).getContent();break;
+             * pageableDefault sudah di declare contoh nya di deklarasi public variable, untuk membatasi data minimal 5000 data yang akan tercetak di PDF
+             */
             case "nama-lengkap": userList = userRepo.findByNamaLengkapContainingIgnoreCase(value);break;
             case "alamat": userList = userRepo.findByAlamatContainingIgnoreCase(value);break;
             case "email": userList = userRepo.findByEmailContainingIgnoreCase(value);break;
