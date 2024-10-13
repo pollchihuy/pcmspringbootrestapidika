@@ -5,17 +5,35 @@
  Source Server Type    : MySQL
  Source Server Version : 90001
  Source Host           : localhost:3377
- Source Schema         : ptdika
+ Source Schema         : demo
 
  Target Server Type    : MySQL
  Target Server Version : 90001
  File Encoding         : 65001
 
- Date: 08/10/2024 06:41:03
+ Date: 14/10/2024 01:02:23
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for log_group_menu
+-- ----------------------------
+DROP TABLE IF EXISTS `log_group_menu`;
+CREATE TABLE `log_group_menu`  (
+                                   `id` int NOT NULL AUTO_INCREMENT,
+                                   `created_at` datetime(6) NOT NULL,
+                                   `created_by` bigint NOT NULL,
+                                   `flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                                   `id_group_menu` bigint NULL DEFAULT NULL,
+                                   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+                                   PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of log_group_menu
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for map_akses_menu
@@ -24,11 +42,11 @@ DROP TABLE IF EXISTS `map_akses_menu`;
 CREATE TABLE `map_akses_menu`  (
                                    `id_akses` bigint NOT NULL,
                                    `id_menu` bigint NOT NULL,
-                                   INDEX `FK_MAP_TO_MENU`(`id_menu` ASC) USING BTREE,
-                                   INDEX `FK_MAP_TO_AKSES`(`id_akses` ASC) USING BTREE,
-                                   CONSTRAINT `FK_MAP_TO_AKSES` FOREIGN KEY (`id_akses`) REFERENCES `mst_akses` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-                                   CONSTRAINT `FK_MAP_TO_MENU` FOREIGN KEY (`id_menu`) REFERENCES `mst_menu` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+                                   INDEX `fk_to_map_menu`(`id_menu` ASC) USING BTREE,
+                                   INDEX `fk_to_map_akses`(`id_akses` ASC) USING BTREE,
+                                   CONSTRAINT `fk_to_map_akses` FOREIGN KEY (`id_akses`) REFERENCES `mst_akses` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+                                   CONSTRAINT `fk_to_map_menu` FOREIGN KEY (`id_menu`) REFERENCES `mst_menu` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of map_akses_menu
@@ -39,6 +57,10 @@ INSERT INTO `map_akses_menu` VALUES (1, 3);
 INSERT INTO `map_akses_menu` VALUES (1, 4);
 INSERT INTO `map_akses_menu` VALUES (1, 5);
 INSERT INTO `map_akses_menu` VALUES (1, 6);
+INSERT INTO `map_akses_menu` VALUES (1, 7);
+INSERT INTO `map_akses_menu` VALUES (1, 8);
+INSERT INTO `map_akses_menu` VALUES (1, 9);
+INSERT INTO `map_akses_menu` VALUES (1, 10);
 INSERT INTO `map_akses_menu` VALUES (2, 5);
 INSERT INTO `map_akses_menu` VALUES (2, 6);
 
@@ -48,10 +70,10 @@ INSERT INTO `map_akses_menu` VALUES (2, 6);
 DROP TABLE IF EXISTS `mst_akses`;
 CREATE TABLE `mst_akses`  (
                               `id` bigint NOT NULL AUTO_INCREMENT,
-                              `nama` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+                              `nama` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
                               PRIMARY KEY (`id`) USING BTREE,
-                              UNIQUE INDEX `UK2rb153rhoo7w4n4hjhgqiy2cl`(`nama_akses` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+                              UNIQUE INDEX `UK7vh06dyln4rg7wuslip6xsads`(`nama` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of mst_akses
@@ -60,21 +82,27 @@ INSERT INTO `mst_akses` VALUES (1, 'ADMIN');
 INSERT INTO `mst_akses` VALUES (2, 'MEMBER');
 
 -- ----------------------------
--- Table structure for mst_group_menu
+-- Table structure for mst_gorup_menu
 -- ----------------------------
-DROP TABLE IF EXISTS `mst_group_menu`;
-CREATE TABLE `mst_group_menu`  (
+DROP TABLE IF EXISTS `mst_gorup_menu`;
+CREATE TABLE `mst_gorup_menu`  (
                                    `id` bigint NOT NULL AUTO_INCREMENT,
+                                   `created_at` datetime(6) NULL DEFAULT NULL,
+                                   `created_by` bigint NOT NULL,
                                    `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                                   `updated_at` datetime(6) NULL DEFAULT NULL,
+                                   `updated_by` bigint NULL DEFAULT NULL,
                                    PRIMARY KEY (`id`) USING BTREE,
-                                   UNIQUE INDEX `UKa7k9qg344pf76x43keiro3j3s`(`name` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+                                   UNIQUE INDEX `UKlqoamxym9icfixm2nbna7ekct`(`name` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of mst_group_menu
+-- Records of mst_gorup_menu
 -- ----------------------------
-INSERT INTO `mst_group_menu` VALUES (2, 'ARTIKEL');
-INSERT INTO `mst_group_menu` VALUES (1, 'USER MANAGEMENT');
+INSERT INTO `mst_gorup_menu` VALUES (1, NULL, 1, 'USER MANAGEMENT', NULL, NULL);
+INSERT INTO `mst_gorup_menu` VALUES (2, NULL, 1, 'ARTIKEL', NULL, NULL);
+INSERT INTO `mst_gorup_menu` VALUES (3, NULL, 1, 'DATA-OLAHAN-1', NULL, NULL);
+INSERT INTO `mst_gorup_menu` VALUES (4, NULL, 1, 'DATA-OLAHAN-2', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for mst_menu
@@ -83,24 +111,28 @@ DROP TABLE IF EXISTS `mst_menu`;
 CREATE TABLE `mst_menu`  (
                              `id` bigint NOT NULL AUTO_INCREMENT,
                              `nama` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-                             `path_menu` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                             `path` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
                              `id_group_menu` bigint NULL DEFAULT NULL,
                              PRIMARY KEY (`id`) USING BTREE,
-                             UNIQUE INDEX `UK6vuc72wn34feiu9ikup3bfv9g`(`nama` ASC) USING BTREE,
-                             UNIQUE INDEX `UK7c0lkupd16ujukd6fvd23b2nh`(`path_menu` ASC) USING BTREE,
-                             INDEX `FK_TO_GROUP_MENU`(`id_group_menu` ASC) USING BTREE,
-                             CONSTRAINT `FK_TO_GROUP_MENU` FOREIGN KEY (`id_group_menu`) REFERENCES `mst_group_menu` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+                             UNIQUE INDEX `UKdevynj15ore5d9ra1kpgxaxyk`(`nama` ASC) USING BTREE,
+                             UNIQUE INDEX `UKq0lx3118qnxqjcsh9kqrwabq8`(`path` ASC) USING BTREE,
+                             INDEX `fk_to_group_menu`(`id_group_menu` ASC) USING BTREE,
+                             CONSTRAINT `fk_to_group_menu` FOREIGN KEY (`id_group_menu`) REFERENCES `mst_gorup_menu` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of mst_menu
 -- ----------------------------
-INSERT INTO `mst_menu` VALUES (1, 'GROUP MENU', '/api/group_menu', 1);
-INSERT INTO `mst_menu` VALUES (2, 'MENU', '/api/menu', 1);
-INSERT INTO `mst_menu` VALUES (3, 'AKSES', '/api/akses', 1);
-INSERT INTO `mst_menu` VALUES (4, 'USER', '/api/user', 1);
-INSERT INTO `mst_menu` VALUES (5, 'ARTIKEL-1', '/api/artikel-1', 2);
-INSERT INTO `mst_menu` VALUES (6, 'ARTIKEL-2', '/api/artikel-2', 2);
+INSERT INTO `mst_menu` VALUES (1, 'GROUP-MENU', '/group-menu', 1);
+INSERT INTO `mst_menu` VALUES (2, 'MENU', '/menu', 1);
+INSERT INTO `mst_menu` VALUES (3, 'AKSES', '/akses', 1);
+INSERT INTO `mst_menu` VALUES (4, 'USER', '/user', 1);
+INSERT INTO `mst_menu` VALUES (5, 'ARTIKEL-1', '/artikel-1', 2);
+INSERT INTO `mst_menu` VALUES (6, 'ARTIKEL-2', '/artikel-2', 2);
+INSERT INTO `mst_menu` VALUES (7, 'DATA-NOMOR', '/data-nomor', 3);
+INSERT INTO `mst_menu` VALUES (8, 'DATA-PROFILE', '/data-profile', 3);
+INSERT INTO `mst_menu` VALUES (9, 'DATA-TAMBAHAN', '/data-tambahan', 4);
+INSERT INTO `mst_menu` VALUES (10, 'DATA-KREDENSIAL', '/data-kredensial', 4);
 
 -- ----------------------------
 -- Table structure for mst_user
@@ -123,13 +155,19 @@ CREATE TABLE `mst_user`  (
                              UNIQUE INDEX `UKm8idrg9l69t1k435r76onei9t`(`no_hp` ASC) USING BTREE,
                              UNIQUE INDEX `UKi81c6oub2xeeue31evpk9g2cp`(`password` ASC) USING BTREE,
                              UNIQUE INDEX `UK76f08iolrai4n77ba0h98eqoi`(`username` ASC) USING BTREE,
-                             INDEX `FK_TO_AKSES`(`id_akses` ASC) USING BTREE,
-                             CONSTRAINT `FK_TO_AKSES` FOREIGN KEY (`id_akses`) REFERENCES `mst_akses` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
+                             INDEX `fk_to_akses`(`id_akses` ASC) USING BTREE,
+                             CONSTRAINT `fk_to_akses` FOREIGN KEY (`id_akses`) REFERENCES `mst_akses` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of mst_user
 -- ----------------------------
-INSERT INTO `mst_user` VALUES (1, 'BogorBogorBogorBogorBogorBogor', 'admin@gmail.com', b'1', 'Admin Tabacan', '6281211111111', '$2a$11$kkx4Q1IKpUitZCagjA8YWOKEyc3kk42yA.XNt1.mTbVikgV6nqR0S', '1995-12-25', '$2a$11$LI5vSNd9y/guWjGA4GmSg.V58JXhrt40HjSuXfA4JLg6C8jQmwYcC', 'admintabacan', 1);
+INSERT INTO `mst_user` VALUES (1, 'BogorBogorBogorBogorBogorBogor', 'admin@gmail.com', b'1', 'Admin Tabacan', '6281211111111', '$2a$11$x0ckuYIUZ0I8K3Qkevd/lulot09e3DmyLRsdEzSo19P6vZ1V1NkaC', '1995-12-25', '$2a$11$DOuqsRo3geagTDCfRPl0seuwz9kRDvVM7syCn.uBm4bfnUB5PmJsO', 'admintabacan', 1);
+
+-- ----------------------------
+-- View structure for v_m_contoh
+-- ----------------------------
+DROP VIEW IF EXISTS `v_m_contoh`;
+CREATE ALGORITHM = UNDEFINED SQL SECURITY DEFINER VIEW `v_m_contoh` AS select `mst_contoh`.`id` AS `id`,`mst_contoh`.`contoh_int` AS `contoh_int`,`mst_contoh`.`contoh_double` AS `contoh_double`,`mst_contoh`.`contoh_float` AS `contoh_float`,`mst_contoh`.`contoh_string` AS `contoh_string`,`mst_contoh`.`contoh_date` AS `contoh_date`,`mst_contoh`.`contoh_boolean` AS `contoh_boolean` from `mst_contoh`;
 
 SET FOREIGN_KEY_CHECKS = 1;

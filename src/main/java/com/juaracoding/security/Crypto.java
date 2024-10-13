@@ -54,11 +54,11 @@ public class Crypto {
 
         Long timeMilis = System.currentTimeMillis();
         System.out.println(timeMilis);
-        String strToEncrypt = "login#"+timeMilis;//put text to encrypt in here
+        String strToEncrypt = "jdbc:mysql://mysqldb:3306/demo?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false";//put text to encrypt in here
         String encryptionResult = new Crypto().performEncrypt(strToEncrypt);
         System.out.println("Encryption Result : "+encryptionResult);
 
-        String strToDecrypt = "a52ed7a180d5255c1652bdaa90782f0a";//put text to decrypt in here
+        String strToDecrypt = "a77502dc7ecb3fdb0d5ed36d7466a8d16f189e97375513b6408fd512ab3c21411a5b9e7bb20e75dc91ad49732cce3a830e9a79bbb7c808485b4fe3d625678ea5c220d14adb5ed5d2902e1340ca759ae92c0fbb465be0cd1e0ca5165049577098";//put text to decrypt in here
         String decriptionResult = new Crypto().performDecrypt(strToDecrypt);
         System.out.println("Decryption Result : "+decriptionResult);
     }

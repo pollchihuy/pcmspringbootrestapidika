@@ -1,17 +1,80 @@
 version : "3.8"
-services :
-    springbima :
-        container_name : cntspringbp
-        image : springbp:1.0
-        ports :
-            - 8082:8082
 
-        environment :
-        - HOST = host.docker.internal
-        - PORT = 1433
-        - DB_UNAME=sa
-        - DB_PWD=b82b0a2134f029053e8ff35f09e7b46d
-        - SHOW_SQL=true
-        - DDL_AUTO=create-drop
-        - DB_SCHEMA = SIKATA
-        - DB_NAME = BP
+#perhatikan urutan penulisannya
+services:
+    mysqldb:
+        image: "mysql:latest"
+        restart: no
+        ports:
+            - 3380:3306
+        networks:
+            - springbootrestapitomysql-net
+        environment:
+            MYSQL_DATABASE: demo
+            MYSQL_ROOT_PASSWORD: paul
+
+    pcmsbrestapidika:
+        image: pcmrestapidika:1.0
+        restart: no
+        ports:
+            - 8892:8080
+        networks:
+            - springbootrestapitomysql-net
+        environment:
+            - APP_PORT=8080
+            - DB_PWD=b381990e93da47d98266f459e749d3af
+#            - jdbc:mysql://mysqldb:3306/demo?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+#            - PORT YG DIGUNAKAN ADALAH 3306 BUKAN 3380, PERLU DIPERHATIKAN SETELAH MELAKUKAN COMPOSE UP MATIKAN SERVICES SPRINGBOOT NYA TERLEBIH DAHULU
+#            - KEMUDIAN COPY SELURUH TABLE KE DATABASE INI BESERTA DATA INISIALISASI NYA TERLEBIH DAHULU LALU NYALAKAN KEMBALI
+            - DB_URL=a77502dc7ecb3fdb0d5ed36d7466a8d16f189e97375513b6408fd512ab3c21411a5b9e7bb20e75dc91ad49732cce3a830e9a79bbb7c808485b4fe3d625678ea5c220d14adb5ed5d2902e1340ca759ae92c0fbb465be0cd1e0ca5165049577098
+            - DB_USN=f691d7c07971842c371c2a2dc899f811
+            - DDL_AUTO=none
+            - FLAG_LOGGING=y
+            - JWT_SECRET=660a1e020c2fdc8c12043a5dd3321cf2c7e2da5b11c203f352901fe6770c319cca98bb7f0332964b2bde23046fc461b1
+            - TEST_AUTO=y
+        depends_on:
+            - mysqldb
+        volumes:
+            - .m2:/root/.m2
+    pcmsbrestapidika-1:
+            image: pcmrestapidika:1.0
+            restart: no
+            ports:
+                - 8893:8080
+            networks:
+                - springbootrestapitomysql-net
+            environment:
+                - APP_PORT=8080
+                - DB_PWD=b381990e93da47d98266f459e749d3af
+                - DB_URL=a77502dc7ecb3fdb0d5ed36d7466a8d16f189e97375513b6408fd512ab3c21411a5b9e7bb20e75dc91ad49732cce3a830e9a79bbb7c808485b4fe3d625678ea5c220d14adb5ed5d2902e1340ca759ae92c0fbb465be0cd1e0ca5165049577098
+                - DB_USN=f691d7c07971842c371c2a2dc899f811
+                - DDL_AUTO=none
+                - FLAG_LOGGING=y
+                - JWT_SECRET=660a1e020c2fdc8c12043a5dd3321cf2c7e2da5b11c203f352901fe6770c319cca98bb7f0332964b2bde23046fc461b1
+                - TEST_AUTO=y
+            depends_on:
+                - mysqldb
+            volumes:
+                - .m2:/root/.m2
+    pcmsbrestapidika-2:
+        image: pcmrestapidika:1.0
+        restart: no
+        ports:
+            - 8894:8080
+        networks:
+            - springbootrestapitomysql-net
+        environment:
+            - APP_PORT=8080
+            - DB_PWD=b381990e93da47d98266f459e749d3af
+            - DB_URL=a77502dc7ecb3fdb0d5ed36d7466a8d16f189e97375513b6408fd512ab3c21411a5b9e7bb20e75dc91ad49732cce3a830e9a79bbb7c808485b4fe3d625678ea5c220d14adb5ed5d2902e1340ca759ae92c0fbb465be0cd1e0ca5165049577098
+            - DB_USN=f691d7c07971842c371c2a2dc899f811
+            - DDL_AUTO=none
+            - FLAG_LOGGING=y
+            - JWT_SECRET=660a1e020c2fdc8c12043a5dd3321cf2c7e2da5b11c203f352901fe6770c319cca98bb7f0332964b2bde23046fc461b1
+            - TEST_AUTO=y
+        depends_on:
+            - mysqldb
+        volumes:
+            - .m2:/root/.m2
+networks:
+    springbootrestapitomysql-net:
