@@ -46,7 +46,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         request -> request
                         .requestMatchers("/api/auth/**",
-                                "/api/**",//buat sementara aja biar gak kehalang security pas ngetest
+//                                "/api/**",//buat sementara aja biar gak kehalang security pas ngetest
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**")
                         .permitAll().anyRequest().authenticated())

@@ -37,7 +37,7 @@ AFTER DELETE
 ON mst_gorup_menu FOR EACH ROW
 BEGIN
     INSERT INTO log_group_menu(id_group_menu,name,created_by,created_at,flag)
-        VALUES(old.id,old.name,old.updated_by,CURRENT_TIMESTAMP,'d');
+        VALUES(old.id,old.name,old.created_by,CURRENT_TIMESTAMP,'d');
 END$$
 
 DELIMITER ;

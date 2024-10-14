@@ -35,7 +35,7 @@ public class GroupMenuController {
 
     /** saat user melakukan mengklik menu group menu , ini adalah api default nya /api/group-menu*/
     @GetMapping
-    @PreAuthorize("hasAuthority('GROUP-MENU')")
+//    @PreAuthorize("hasAuthority('GROUP-MENU')")
     public ResponseEntity<Object> defaultPage(
             HttpServletRequest request
     ){
@@ -59,6 +59,7 @@ public class GroupMenuController {
                                         @Valid @RequestBody ValGroupMenuDTO valGroupMenuDTO,
                                         HttpServletRequest request
     ){
+        System.out.println("MASUK API UPDATE GROUP MENU");
         return groupMenuService.update(id,groupMenuService.convertToEntity(valGroupMenuDTO), request);
     }
 
@@ -96,6 +97,7 @@ public class GroupMenuController {
         return groupMenuService.findAll(pageable,request);
     }
 
+    @PreAuthorize("hasAuthority('GROUP-MENU')")
     @PostMapping("/v1/upload-sheet")
     public ResponseEntity<Object> uploadSheet(
             @RequestParam(value = "xlsx-file") MultipartFile csvFile,

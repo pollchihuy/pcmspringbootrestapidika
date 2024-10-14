@@ -112,7 +112,7 @@ public class UserService implements IService<User> {
 
        }catch (Exception e){
            LoggingFile.exceptionStringz("UserService","update",e,OtherConfig.getFlagLogging());
-           return GlobalFunction.dataGagalDisimpan("FE002002011",request);
+           return GlobalFunction.dataGagalDiubah("FE002002011",request);
        }
 
        return GlobalFunction.dataBerhasilDiubah(request);
@@ -128,7 +128,7 @@ public class UserService implements IService<User> {
             userRepo.deleteById(id);
         }catch (Exception e){
             LoggingFile.exceptionStringz("UserService","delete",e,OtherConfig.getFlagLogging());
-            return GlobalFunction.dataGagalDisimpan("FE002002021",request);
+            return GlobalFunction.dataGagalDihapus("FE002002021",request);
         }
         return GlobalFunction.dataBerhasilDihapus(request);
     }
@@ -304,7 +304,7 @@ public class UserService implements IService<User> {
         map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
         map.put("username",payloadJwt.get("namaLengkap"));
         map.put("totalData",listRespMenu.size());
-        map.put("title","REPORT AKSES");
+        map.put("title","REPORT USER");
         context.setVariables(map);
         strHtml = springTemplateEngine.process("global-report",context);
         pdfGenerator.htmlToPdf(strHtml,"user",response);
@@ -349,6 +349,7 @@ public class UserService implements IService<User> {
 //        map.put("listKolom",listTampungSebentar);//KOLOM DIHARDCODE DI TEMPLATE HTML NYA
 //        map.put("listHelper",listHelper);//tidak perlu lagi karena sudah dimapping manual di html
         map.put("listContent",reportUserDTOList);
+        map.put("listReport",reportUserDTOList);
         map.put("timestamp",GlobalFunction.formatingDateDDMMMMYYYY());
         map.put("username",payloadJwt.get("namaLengkap"));
         map.put("totalData",reportUserDTOList.size());

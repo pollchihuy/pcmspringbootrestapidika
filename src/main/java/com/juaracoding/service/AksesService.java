@@ -86,7 +86,7 @@ public class AksesService implements IService<Akses> {
            aksesDB.setMenuList(akses.getMenuList());
        }catch (Exception e){
            LoggingFile.exceptionStringz("AksesService","update",e,OtherConfig.getFlagLogging());
-           return GlobalFunction.dataGagalDisimpan("FE001003011",request);
+           return GlobalFunction.dataGagalDiubah("FE001003011",request);
        }
 
        return GlobalFunction.dataBerhasilDiubah(request);
@@ -102,7 +102,7 @@ public class AksesService implements IService<Akses> {
             aksesRepo.deleteById(id);
         }catch (Exception e){
             LoggingFile.exceptionStringz("AksesService","delete",e,OtherConfig.getFlagLogging());
-            return GlobalFunction.dataGagalDisimpan("FE001003021",request);
+            return GlobalFunction.dataGagalDihapus("FE001003021",request);
         }
         return GlobalFunction.dataBerhasilDihapus(request);
     }

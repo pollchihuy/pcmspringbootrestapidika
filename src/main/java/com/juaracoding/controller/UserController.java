@@ -92,6 +92,7 @@ public class UserController {
         return userService.findAll(pageable,request);
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/v1/{page}/{sort}/{sort-by}")
     public ResponseEntity<Object> findByParam(
             @PathVariable(value = "page") Integer page,//page yang ke ?

@@ -3,10 +3,9 @@ package com.juaracoding.util;
 import com.juaracoding.config.OtherConfig;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.*;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +34,7 @@ public class ExcelWriter {
     public void writeToExcel(String[][] datas, String[] header, HttpServletResponse response )
     {
         mapData.clear();
-
+        CellStyle headerStyle ;
         try {
             int k=1;/*initiate for rows data in excel*/
 
@@ -51,6 +50,21 @@ public class ExcelWriter {
                 }
                 mapData.put(k,strDatas);
             }
+            headerStyle = workbook.createCellStyle();
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            Font headerFont = workbook.createFont();
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+             CellStyle cellStyle = workbook.createCellStyle();
+             cellStyle.setWrapText(true);
+             cellStyle.setBorderBottom(BorderStyle.THIN);
+             cellStyle.setBorderTop(BorderStyle.THIN);
+             cellStyle.setBorderLeft(BorderStyle.THIN);
+             cellStyle.setBorderRight(BorderStyle.THIN);
 
             Set<Integer> keyid = mapData.keySet();
             int rowid = 0;
@@ -63,6 +77,7 @@ public class ExcelWriter {
                 for (Object obj : objectArr) {
                     Cell cell = row.createCell(cellid++);
                     cell.setCellValue((String)obj);
+                    cell.setCellStyle(cellStyle);
                 }
             }
 

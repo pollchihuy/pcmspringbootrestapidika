@@ -41,7 +41,7 @@ public class TestGroupMenuRepo extends AbstractTestNGSpringContextTests {
 
     @Test(priority = 1)
     public void update(){
-        Optional<GroupMenu> opNext = groupMenuRepo.findTop1By();
+        Optional<GroupMenu> opNext = groupMenuRepo.findTopByOrderByIdDesc();
         if(!opNext.isPresent()){
             Assert.assertNotNull(null);
         }
@@ -61,7 +61,7 @@ public class TestGroupMenuRepo extends AbstractTestNGSpringContextTests {
 
     @Test(priority = 2)
     public void delete(){
-        Optional<GroupMenu> opNext = groupMenuRepo.findTop1By();
+        Optional<GroupMenu> opNext = groupMenuRepo.findTopByOrderByIdDesc();
         if(!opNext.isPresent()){
             Assert.assertNotNull(null);
         }

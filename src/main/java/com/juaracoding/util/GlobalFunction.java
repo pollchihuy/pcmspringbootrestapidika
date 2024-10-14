@@ -41,6 +41,16 @@ public class GlobalFunction {
         );
     }
 
+    public static ResponseEntity<Object> dataGagalDihapus(String errorCode, HttpServletRequest request){
+        return new ResponseHandler().generateResponse(
+                "DATA GAGAL DIHAPUS",
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                null,
+                errorCode,
+                request
+        );
+    }
+
     public static ResponseEntity<Object> contentTypeWorkBook(String errorCode, HttpServletRequest request)
     {
         return new ResponseHandler().generateResponse("Ekstensi File harus .xlsx / Format Workbook bukan dari template yang diunduh dari Platform",

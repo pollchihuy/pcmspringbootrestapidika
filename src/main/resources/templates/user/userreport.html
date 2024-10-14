@@ -98,7 +98,7 @@
         <th>ID</th>
         <th>Nama</th>
         <th>Email</th>
-        <th>Alamat</th>
+<!--        <th>Alamat</th>-->
         <th>Umur</th>
         <th>Tanggal Lahir</th>
         <th>No HP</th>
@@ -106,11 +106,11 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="list:${listContent}">
+    <tr th:each="list:${listReport}">
         <td th:text="${list.id}"></td>
         <td th:text="${list.namaLengkap}"></td>
         <td th:text="${list.email}"></td>
-        <td th:text="${list.alamat}"></td>
+<!--        <td th:text="${list.alamat}"></td>-->
         <td th:text="${list.umur}"></td>
         <td th:text="${list.tanggalLahir}"></td>
         <td th:text="${list.noHp}"></td>
@@ -118,6 +118,8 @@
     </tr>
     </tbody>
 </table>
+
+
 
 <div class="footer">
     <span th:text="'Requested by: ' + ${username}"></span>

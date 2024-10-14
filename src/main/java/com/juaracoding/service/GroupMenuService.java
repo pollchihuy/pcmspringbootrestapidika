@@ -95,7 +95,7 @@ public class GroupMenuService implements IService<GroupMenu> {
            groupMenuDB.setUpdatedBy(1L);
        }catch (Exception e){
            LoggingFile.exceptionStringz("GroupMenuService","update",e,OtherConfig.getFlagLogging());
-           return GlobalFunction.dataGagalDisimpan("FE001001011",request);
+           return GlobalFunction.dataGagalDiubah("FE001001011",request);
        }
 
        return GlobalFunction.dataBerhasilDiubah(request);
@@ -111,7 +111,7 @@ public class GroupMenuService implements IService<GroupMenu> {
             groupMenuRepo.deleteById(id);
         }catch (Exception e){
             LoggingFile.exceptionStringz("GroupMenuService","delete",e,OtherConfig.getFlagLogging());
-            return GlobalFunction.dataGagalDisimpan("FE001001021",request);
+            return GlobalFunction.dataGagalDihapus("FE001001021",request);
         }
         return GlobalFunction.dataBerhasilDihapus(request);
     }
@@ -189,7 +189,7 @@ public class GroupMenuService implements IService<GroupMenu> {
         for (int i = 0; i < workBookData.size(); i++) {
             Map<String, String> map = workBookData.get(i);
             GroupMenu groupMenu = new GroupMenu();
-            groupMenu.setName(map.get("nama"));
+            groupMenu.setName(map.get("name"));//nama kolom di excel nya adalah name
             groupMenu.setCreatedBy(userId);
             list.add(groupMenu);
         }

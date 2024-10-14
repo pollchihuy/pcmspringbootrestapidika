@@ -1,5 +1,6 @@
 package com.juaracoding.repo;
 
+import com.juaracoding.model.Akses;
 import com.juaracoding.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,5 +47,8 @@ public interface UserRepo extends JpaRepository<User,Long> {
     /** UNTUK REGISTRASI */
     Optional<User> findByEmail(String value);
     Optional<User> findByEmailAndIsRegistered(String value, Boolean isRegistered);
+
+    /** buat automation */
+    public Optional<User> findTopByOrderByIdDesc();
 
 }

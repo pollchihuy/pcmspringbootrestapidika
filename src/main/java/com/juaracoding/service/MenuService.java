@@ -103,7 +103,7 @@ public class MenuService implements IService<Menu> {
            menuDB.setNama(menu.getNama());
        }catch (Exception e){
            LoggingFile.exceptionStringz("MenuService","update",e,OtherConfig.getFlagLogging());
-           return GlobalFunction.dataGagalDisimpan("FE002002011",request);
+           return GlobalFunction.dataGagalDihapus("FE002002011",request);
        }
 
        return GlobalFunction.dataBerhasilDiubah(request);
@@ -119,7 +119,7 @@ public class MenuService implements IService<Menu> {
             menuRepo.deleteById(id);
         }catch (Exception e){
             LoggingFile.exceptionStringz("MenuService","delete",e,OtherConfig.getFlagLogging());
-            return GlobalFunction.dataGagalDisimpan("FE002002021",request);
+            return GlobalFunction.dataGagalDihapus("FE002002021",request);
         }
         return GlobalFunction.dataBerhasilDihapus(request);
     }

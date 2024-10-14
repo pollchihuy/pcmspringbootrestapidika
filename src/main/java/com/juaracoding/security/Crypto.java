@@ -54,7 +54,8 @@ public class Crypto {
 
         Long timeMilis = System.currentTimeMillis();
         System.out.println(timeMilis);
-        String strToEncrypt = "jdbc:mysql://mysqldb:3306/demo?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false";//put text to encrypt in here
+//        String strToEncrypt = "jdbc:mysql://mysqldb:3306/demo?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false";//put text to encrypt in here
+        String strToEncrypt = "89ujiuh";//put text to encrypt in here
         String encryptionResult = new Crypto().performEncrypt(strToEncrypt);
         System.out.println("Encryption Result : "+encryptionResult);
 

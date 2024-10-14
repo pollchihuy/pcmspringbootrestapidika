@@ -6,7 +6,7 @@ public class ReportUserDTO {
 
     private Long id;
     private String namaLengkap;
-    private String alamat;
+//    private String alamat;
     private String email;
     private String username;
     private LocalDate tanggalLahir;
@@ -46,13 +46,13 @@ public class ReportUserDTO {
         this.id = id;
     }
 
-    public String getAlamat() {
-        return alamat;
-    }
-
-    public void setAlamat(String alamat) {
-        this.alamat = alamat;
-    }
+//    public String getAlamat() {
+//        return alamat;
+//    }
+//
+//    public void setAlamat(String alamat) {
+//        this.alamat = alamat;
+//    }
 
     public String getEmail() {
         return email;

@@ -30,7 +30,7 @@ public class AksesController {
 
     private void mapSorting()
     {
-        mapSorting.put("nama","group");
+        mapSorting.put("nama","nama");
     }
 
     /** saat user melakukan mengklik menu group menu , ini adalah api default nya /api/akses*/
