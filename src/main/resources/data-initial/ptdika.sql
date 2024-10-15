@@ -80,12 +80,13 @@ CREATE TABLE `mst_akses`  (
 -- ----------------------------
 INSERT INTO `mst_akses` VALUES (1, 'ADMIN');
 INSERT INTO `mst_akses` VALUES (2, 'MEMBER');
+INSERT INTO `mst_akses` VALUES (3, 'TANPA_RELASI');
 
 -- ----------------------------
--- Table structure for mst_gorup_menu
+-- Table structure for mst_group_menu
 -- ----------------------------
-DROP TABLE IF EXISTS `mst_gorup_menu`;
-CREATE TABLE `mst_gorup_menu`  (
+DROP TABLE IF EXISTS `mst_group_menu`;
+CREATE TABLE `mst_group_menu`  (
                                    `id` bigint NOT NULL AUTO_INCREMENT,
                                    `created_at` datetime(6) NULL DEFAULT NULL,
                                    `created_by` bigint NOT NULL,
@@ -97,12 +98,13 @@ CREATE TABLE `mst_gorup_menu`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of mst_gorup_menu
+-- Records of mst_group_menu
 -- ----------------------------
-INSERT INTO `mst_gorup_menu` VALUES (1, NULL, 1, 'USER MANAGEMENT', NULL, NULL);
-INSERT INTO `mst_gorup_menu` VALUES (2, NULL, 1, 'ARTIKEL', NULL, NULL);
-INSERT INTO `mst_gorup_menu` VALUES (3, NULL, 1, 'DATA-OLAHAN-1', NULL, NULL);
-INSERT INTO `mst_gorup_menu` VALUES (4, NULL, 1, 'DATA-OLAHAN-2', NULL, NULL);
+INSERT INTO `mst_group_menu` VALUES (1, NULL, 1, 'USER MANAGEMENT', NULL, NULL);
+INSERT INTO `mst_group_menu` VALUES (2, NULL, 1, 'ARTIKEL', NULL, NULL);
+INSERT INTO `mst_group_menu` VALUES (3, NULL, 1, 'DATA-OLAHAN-1', NULL, NULL);
+INSERT INTO `mst_group_menu` VALUES (4, NULL, 1, 'DATA-OLAHAN-2', NULL, NULL);
+INSERT INTO `mst_group_menu` VALUES (5, NULL, 1, 'DATA-TANPA-RELASI', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for mst_menu
@@ -117,7 +119,7 @@ CREATE TABLE `mst_menu`  (
                              UNIQUE INDEX `UKdevynj15ore5d9ra1kpgxaxyk`(`nama` ASC) USING BTREE,
                              UNIQUE INDEX `UKq0lx3118qnxqjcsh9kqrwabq8`(`path` ASC) USING BTREE,
                              INDEX `fk_to_group_menu`(`id_group_menu` ASC) USING BTREE,
-                             CONSTRAINT `fk_to_group_menu` FOREIGN KEY (`id_group_menu`) REFERENCES `mst_gorup_menu` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+                             CONSTRAINT `fk_to_group_menu` FOREIGN KEY (`id_group_menu`) REFERENCES `mst_group_menu` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -133,6 +135,7 @@ INSERT INTO `mst_menu` VALUES (7, 'DATA-NOMOR', '/data-nomor', 3);
 INSERT INTO `mst_menu` VALUES (8, 'DATA-PROFILE', '/data-profile', 3);
 INSERT INTO `mst_menu` VALUES (9, 'DATA-TAMBAHAN', '/data-tambahan', 4);
 INSERT INTO `mst_menu` VALUES (10, 'DATA-KREDENSIAL', '/data-kredensial', 4);
+INSERT INTO `mst_menu` VALUES (11, 'DATA-TANPA-RELASIH', '/data-tanpa-relasih', null);
 
 -- ----------------------------
 -- Table structure for mst_user
@@ -163,11 +166,4 @@ CREATE TABLE `mst_user`  (
 -- Records of mst_user
 -- ----------------------------
 INSERT INTO `mst_user` VALUES (1, 'BogorBogorBogorBogorBogorBogor', 'admin@gmail.com', b'1', 'Admin Tabacan', '6281211111111', '$2a$11$x0ckuYIUZ0I8K3Qkevd/lulot09e3DmyLRsdEzSo19P6vZ1V1NkaC', '1995-12-25', '$2a$11$DOuqsRo3geagTDCfRPl0seuwz9kRDvVM7syCn.uBm4bfnUB5PmJsO', 'admintabacan', 1);
-
--- ----------------------------
--- View structure for v_m_contoh
--- ----------------------------
-DROP VIEW IF EXISTS `v_m_contoh`;
-CREATE ALGORITHM = UNDEFINED SQL SECURITY DEFINER VIEW `v_m_contoh` AS select `mst_contoh`.`id` AS `id`,`mst_contoh`.`contoh_int` AS `contoh_int`,`mst_contoh`.`contoh_double` AS `contoh_double`,`mst_contoh`.`contoh_float` AS `contoh_float`,`mst_contoh`.`contoh_string` AS `contoh_string`,`mst_contoh`.`contoh_date` AS `contoh_date`,`mst_contoh`.`contoh_boolean` AS `contoh_boolean` from `mst_contoh`;
-
-SET FOREIGN_KEY_CHECKS = 1;
+INSERT INTO `mst_user` VALUES (2, 'tanparelasihtanparelasihtanparelasih', 'tanparelasih@gmail.com', b'1', 'Tanpa Relasih', '62812223333333', '$2a$11$x0ckuYIUZ0I8K3Qkevd/lulot09e3DmyLRsdEzSo19P6oij8hMhuhHg', '1995-12-25', '$2a$11$DOuqsRo3geagTDCfRPl0seuwz9kRDvVM7syCn.081u2uh9uerht981', 'tanparelasih', null);

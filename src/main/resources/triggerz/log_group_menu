@@ -3,7 +3,7 @@ DELIMITER $$
 
 CREATE TRIGGER after_insert_group_menu
 AFTER INSERT
-ON mst_gorup_menu FOR EACH ROW
+ON mst_group_menu FOR EACH ROW
 BEGIN
     INSERT INTO log_group_menu(id_group_menu,name,created_by,created_at,flag)
         VALUES(new.id,new.name,new.created_by,CURRENT_TIMESTAMP,'i');
@@ -18,7 +18,7 @@ DELIMITER $$
 
 CREATE TRIGGER after_update_group_menu
 AFTER UPDATE
-ON mst_gorup_menu FOR EACH ROW
+ON mst_group_menu FOR EACH ROW
 BEGIN
     INSERT INTO log_group_menu(id_group_menu,name,created_by,created_at,flag)
         VALUES(old.id,old.name,new.updated_by,CURRENT_TIMESTAMP,'e');
@@ -34,7 +34,7 @@ DELIMITER $$
 
 CREATE TRIGGER after_delete_group_menu
 AFTER DELETE
-ON mst_gorup_menu FOR EACH ROW
+ON mst_group_menu FOR EACH ROW
 BEGIN
     INSERT INTO log_group_menu(id_group_menu,name,created_by,created_at,flag)
         VALUES(old.id,old.name,old.created_by,CURRENT_TIMESTAMP,'d');

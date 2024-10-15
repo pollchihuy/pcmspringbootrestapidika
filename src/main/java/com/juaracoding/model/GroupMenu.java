@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "mst_gorup_menu")
+@Table(name = "mst_group_menu")
 public class GroupMenu {
 
     @Id

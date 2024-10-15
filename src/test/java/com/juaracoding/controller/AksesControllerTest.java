@@ -1,8 +1,8 @@
 package com.juaracoding.controller;
 
-import static io.restassured.RestAssured.given;
-import com.juaracoding.model.GroupMenu;
-import com.juaracoding.repo.GroupMenuRepo;
+import com.juaracoding.dto.validasi.ValMenuDTO;
+import com.juaracoding.model.Akses;
+import com.juaracoding.repo.AksesRepo;
 import com.juaracoding.utils.DataGenerator;
 import com.juaracoding.utils.TokenGenerator;
 import io.restassured.http.Method;
@@ -15,30 +15,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
+import static io.restassured.RestAssured.given;
 
-/** UNTUK TESTING DEPLOY TERLEBIH DAHULU SCRIPT SQL YANG CLEAN NYA
- * SETELAH ITU DEPLOY TRIGGER TABLE LOG NYA KALAU ADA
- * LAKUKAN PENGETESAN UNIT TESTING, PASTIKAN LANGKAH PERTAMA ADALAH SAVE DATA DULU
- * AGAR RELASI NYA AMAN...
- * BARU DISUSUL INTEGRATION TEST
- * SELANJUTNYA SUITE TEST
- *
- * */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
+public class AksesControllerTest extends AbstractTestNGSpringContextTests {
     @Autowired
-    private GroupMenuRepo groupMenuRepo;
+    private AksesRepo aksesRepo;
     private JSONObject req;
-    private GroupMenu groupMenu;
+    private Akses akses;
     private DataGenerator dataGenerator;
     private Random rand ;
     private String token ;
@@ -48,15 +40,14 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
     private String data;
 
     @BeforeClass
-//    @BeforeSuite
     private void init(){
         token = new TokenGenerator(AuthControllerTest.authorization).getToken();
         rand = new Random();
         req = new JSONObject();
-        groupMenu = new GroupMenu();
+        akses = new Akses();
         dataGenerator = new DataGenerator();
-        Optional<GroupMenu> opGroupMenu = groupMenuRepo.findTopByOrderByIdDesc();
-        groupMenu = opGroupMenu.get();
+        Optional<Akses> opAkses = aksesRepo.findTopByOrderByIdDesc();
+        akses = opAkses.get();
     }
 
     @BeforeTest
@@ -66,7 +57,8 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
 
     @Test(priority = 0)
     private void save(){
-        req.put("name",dataGenerator.dataNamaTim());
+        req.put("nama",dataGenerator.dataNamaTim());
+        req.put("menuList",new ArrayList<ValMenuDTO>());//kosongin aja , yg penting tidak null soalnya ada validasi not null
         RequestSpecification httpRequest = given().
                 header("Content-Type","application/json").
                 header("accept","*/*").
@@ -78,10 +70,10 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
 //            FilterableRequestSpecification spec = (FilterableRequestSpecification)httpRequest;
 //            System.out.println(spec.getHeaders());
 //        }
-        String pathVariable = "/api/group-menu/v1";
+        String pathVariable = "/api/akses/v1";
         Response response = httpRequest.request(Method.POST, pathVariable);
         int responseCode = response.statusCode();
-//        System.out.println("RESPONSE CODE : "+responseCode);
+        System.out.println("RESPONSE CODE : "+responseCode);
         JsonPath jPath = response.jsonPath();
 //        ResponseBody responseBody = response.getBody();// seluruh body dari response
 //        System.out.println("====================================START RESPONSE BODY =================================================");
@@ -106,15 +98,18 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
          * NAMA NYA SESUAI DENGAN YANG DIUBAH
          */
         String reqNama = dataGenerator.dataNamaTim();
-        groupMenu.setName(reqNama);
-        req.put("name",reqNama);
+        System.out.println("nama - akses untuk diubah "+reqNama);
+        System.out.println("id - akses untuk diubah "+akses.getId());
+
+        req.put("nama",reqNama);
+        req.put("menuList",new ArrayList<ValMenuDTO>());//kosongin aja , yg penting tidak null soalnya ada validasi not null
         RequestSpecification httpRequest = given().
                 header("Content-Type","application/json").
                 header("accept","*/*").
                 header(AuthControllerTest.AUTH_HEADER,token).
                 body(req);
 
-        String pathVariable = "/api/group-menu/v1/"+groupMenu.getId();
+        String pathVariable = "/api/akses/v1/"+ akses.getId();
         Response response = httpRequest.request(Method.PUT, pathVariable);
         int responseCode = response.statusCode();
         JsonPath jPath = response.jsonPath();
@@ -131,6 +126,7 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(message,"DATA BERHASIL DIUBAH");
         Assert.assertEquals(status,"200");
         Assert.assertEquals(success,true);
+        akses.setNama(reqNama);//taruh di akhir
     }
 
 //    APP_PORT=8080;CONTOH=OK-BOS;CONTOH_LAIN=HUE;DB_PWD=b381990e93da47d98266f459e749d3af;DB_URL=abb07b3e6ce49452eee7f5532759ade255405fb9712a08b8b79917eea06353738db3d72c7d41436421fc59ebf1ae02fbbbde46a1679ac3f55072998cbae86e9d9649f318ddbb8d8fbcd1fae37a29e357a97847d15ca393b305e550261883dfbd;DB_USN=f691d7c07971842c371c2a2dc899f811;DDL_AUTO=update;EMAIL_USN=17d63b1126a9e9b307867db15245d8e7ab1442297b4e300640ed22a615eba3a0;JWT_SECRET=660a1e020c2fdc8c12043a5dd3321cf2c7e2da5b11c203f352901fe6770c319cca98bb7f0332964b2bde23046fc461b1;TEST_AUTO=y;FLAG_LOGGING=y
@@ -140,7 +136,7 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         header("Content-Type","application/json").
         header(AuthControllerTest.AUTH_HEADER,token).
         header("accept","*/*");
-        String pathVariable = "/api/group-menu/v1/"+groupMenu.getId();
+        String pathVariable = "/api/akses/v1/"+ akses.getId();
         Response response = httpRequest.request(Method.GET, pathVariable);
 //        ResponseBody responseBody = response.getBody();// seluruh body dari response
 //        Headers responseHeader = response.getHeaders();// seluruh headers dari response akan di tampung disini
@@ -149,12 +145,12 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         int responseCode = response.statusCode();
         JsonPath jPath = response.jsonPath();
         Long id = Long.parseLong(jPath.getString("data.id"));
-        String name = jPath.getString("data.name");
+        String name = jPath.getString("data.nama");
         status = jPath.getString("status");
         success = Boolean.parseBoolean(jPath.getString("success"));
         Assert.assertEquals(responseCode,200);
-        Assert.assertEquals(name,groupMenu.getName());
-        Assert.assertEquals(id,groupMenu.getId());
+        Assert.assertEquals(name, akses.getNama());
+        Assert.assertEquals(id, akses.getId());
         Assert.assertEquals(status,"200");
         Assert.assertEquals(success,true);
     }
@@ -168,7 +164,7 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
                 header(AuthControllerTest.AUTH_HEADER,token).
                 param("size",1);
 
-        String pathVariable = "/api/group-menu/v1/all/0/desc/id";
+        String pathVariable = "/api/akses/v1/all/0/desc/id";
         Response response = httpRequest.request(Method.GET, pathVariable);
 //        ResponseBody responseBody = response.getBody();// seluruh body dari response
 //        Headers responseHeader = response.getHeaders();// seluruh headers dari response akan di tampung disini
@@ -179,7 +175,7 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         /** untuk case ini pengambilan datanya menggunakan List */
         List<Map<String,Object>> lt = jPath.getList("data.content");
         Long id = Long.parseLong(lt.get(0).get("id").toString());
-        String name =lt.get(0).get("name").toString();
+        String name =lt.get(0).get("nama").toString();
         status = jPath.getString("status");
         success = Boolean.parseBoolean(jPath.getString("success"));
         message = jPath.getString("message");
@@ -209,8 +205,8 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
                 header("Content-Type","multipart/form-data").
                 header("accept","*/*").
                 header(AuthControllerTest.AUTH_HEADER,token).
-                multiPart("xlsx-file",new File(System.getProperty("user.dir")+"/src/test/resources/data-test/groupmenu.xlsx"));
-        String pathVariable = "/api/group-menu/v1/upload-sheet";
+                multiPart("xlsx-file",new File(System.getProperty("user.dir")+"/src/test/resources/data-test/akses.xlsx"));
+        String pathVariable = "/api/akses/v1/upload-sheet";
         Response response = httpRequest.request(Method.POST, pathVariable);
 //        ResponseBody responseBody = response.getBody();// seluruh body dari response
 //        System.out.println("====================================START RESPONSE BODY =================================================");
@@ -232,11 +228,11 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         RequestSpecification httpRequest = given().
                 header("Content-Type","application/json").
                 header("accept","*/*").
-                param("col","name").
+                param("col","nama").
                 header(AuthControllerTest.AUTH_HEADER,token).
-                param("val",groupMenu.getName());
+                param("val", akses.getNama());
 
-        String pathVariable = "/api/group-menu/v1/download-sheet";
+        String pathVariable = "/api/akses/v1/download-sheet";
         Response response = httpRequest.request(Method.GET, pathVariable);
         ResponseBody responseBody = response.getBody();// seluruh body dari response
 //        System.out.println("====================================START RESPONSE BODY =================================================");
@@ -253,11 +249,11 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         RequestSpecification httpRequest = given().
                 header("Content-Type","application/json").
                 header("accept","*/*").
-                param("col","name").
+                param("col","nama").
                 header(AuthControllerTest.AUTH_HEADER,token).
-                param("val",groupMenu.getName());
+                param("val", akses.getNama());
 
-        String pathVariable = "/api/group-menu/v1/download-pdf";
+        String pathVariable = "/api/akses/v1/download-pdf";
         Response response = httpRequest.request(Method.GET, pathVariable);
         ResponseBody responseBody = response.getBody();// seluruh body dari response
 //        System.out.println("====================================START RESPONSE BODY =================================================");
@@ -277,7 +273,7 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
                 header("accept","*/*").
                 header(AuthControllerTest.AUTH_HEADER,token);
 //        System.out.println("ID : "+groupMenu.getId());
-        String pathVariable = "/api/group-menu/v1/"+groupMenu.getId();
+        String pathVariable = "/api/akses/v1/"+ akses.getId();
         Response response = httpRequest.request(Method.DELETE, pathVariable);
         ResponseBody responseBody = response.getBody();// seluruh body dari response
 //        System.out.println("====================================START RESPONSE BODY =================================================");
@@ -293,5 +289,10 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(status,"200");
         Assert.assertEquals(success,true);
         Assert.assertEquals(message,"DATA BERHASIL DIHAPUS");
+    }
+
+    @AfterSuite
+    public void finish(){
+        System.out.println("AFTER SUITE");
     }
 }
