@@ -39,7 +39,7 @@ public class TransformToDTO {
         mapz.put("sort",sort.trim().toLowerCase());
         mapz.put("number_of_elements",page.getNumberOfElements());
         mapz.put("column_name",filterBy);
-        mapz.put("component-filter",componentFiltering);
+//        mapz.put("component-filter",componentFiltering);
         mapz.put("value",value);
         return new ResponseHandler().
                 generateResponse("PERMINTAAN DATA BERHASIL",

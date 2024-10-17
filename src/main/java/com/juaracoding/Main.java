@@ -11,7 +11,6 @@ public class Main {
 //        Security.addProvider(new BouncyCastleProvider());
         SpringApplication.run(Main.class, args);
     }
-
 //    @Bean
 //	public CommandLineRunner initializeUser(UserRepo userRepository, GroupMenuRepo groupMenuRepository) {
 //		return args -> {

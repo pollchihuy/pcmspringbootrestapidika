@@ -81,22 +81,24 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         String pathVariable = "/api/group-menu/v1";
         Response response = httpRequest.request(Method.POST, pathVariable);
         int responseCode = response.statusCode();
-//        System.out.println("RESPONSE CODE : "+responseCode);
+        System.out.println("RESPONSE CODE : "+responseCode);
         JsonPath jPath = response.jsonPath();
-//        ResponseBody responseBody = response.getBody();// seluruh body dari response
-//        System.out.println("====================================START RESPONSE BODY =================================================");
-//        System.out.println(responseBody.asPrettyString());// untuk melihat isi dari response body dalam bentuk JSON
+        ResponseBody responseBody = response.getBody();// seluruh body dari response
+        System.out.println("====================================START RESPONSE BODY =================================================");
+        System.out.println(responseBody.asPrettyString());// untuk melihat isi dari response body dalam bentuk JSON
         message = jPath.getString("message");
         status = jPath.getString("status");
         /** response dari server adalah boolean tapi diubah jadi string */
         success = Boolean.parseBoolean(jPath.getString("success"));
         /** kalau kelima parameter response ini sudah sama , artinya testing berhasil */
         data = jPath.getString("data");
+        String timeStamp = jPath.getString("timestamp");
         Assert.assertEquals(data,"");
         Assert.assertEquals(responseCode,201);
         Assert.assertEquals(message,"DATA BERHASIL DISIMPAN");
         Assert.assertEquals(status,"201");
         Assert.assertEquals(success,true);
+//        Assert.assertNotNull(timeStamp);
     }
 
 //    APP_PORT=8080;CONTOH=OK-BOS;CONTOH_LAIN=HUE;DB_PWD=b381990e93da47d98266f459e749d3af;DB_URL=abb07b3e6ce49452eee7f5532759ade255405fb9712a08b8b79917eea06353738db3d72c7d41436421fc59ebf1ae02fbbbde46a1679ac3f55072998cbae86e9d9649f318ddbb8d8fbcd1fae37a29e357a97847d15ca393b305e550261883dfbd;DB_USN=f691d7c07971842c371c2a2dc899f811;DDL_AUTO=update;EMAIL_USN=17d63b1126a9e9b307867db15245d8e7ab1442297b4e300640ed22a615eba3a0;JWT_SECRET=660a1e020c2fdc8c12043a5dd3321cf2c7e2da5b11c203f352901fe6770c319cca98bb7f0332964b2bde23046fc461b1;TEST_AUTO=y;FLAG_LOGGING=y
@@ -142,10 +144,9 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         header("accept","*/*");
         String pathVariable = "/api/group-menu/v1/"+groupMenu.getId();
         Response response = httpRequest.request(Method.GET, pathVariable);
-//        ResponseBody responseBody = response.getBody();// seluruh body dari response
-//        Headers responseHeader = response.getHeaders();// seluruh headers dari response akan di tampung disini
-//        System.out.println("====================================START RESPONSE BODY =================================================");
-//        System.out.println(responseBody.asPrettyString());// untuk melihat isi dari response body dalam bentuk JSON
+        ResponseBody responseBody = response.getBody();// seluruh body dari response
+        System.out.println("====================================START RESPONSE BODY =================================================");
+        System.out.println(responseBody.asPrettyString());// untuk melihat isi dari response body dalam bentuk JSON
         int responseCode = response.statusCode();
         JsonPath jPath = response.jsonPath();
         Long id = Long.parseLong(jPath.getString("data.id"));
@@ -170,10 +171,10 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
 
         String pathVariable = "/api/group-menu/v1/all/0/desc/id";
         Response response = httpRequest.request(Method.GET, pathVariable);
-//        ResponseBody responseBody = response.getBody();// seluruh body dari response
+        ResponseBody responseBody = response.getBody();// seluruh body dari response
 //        Headers responseHeader = response.getHeaders();// seluruh headers dari response akan di tampung disini
-//        System.out.println("====================================START RESPONSE BODY =================================================");
-//        System.out.println(responseBody.asPrettyString());// untuk melihat isi dari response body dalam bentuk JSON
+        System.out.println("====================================START RESPONSE BODY =================================================");
+        System.out.println(responseBody.asPrettyString());// untuk melihat isi dari response body dalam bentuk JSON
         int responseCode = response.statusCode();
         JsonPath jPath = response.jsonPath();
         /** untuk case ini pengambilan datanya menggunakan List */
@@ -186,18 +187,22 @@ public class GroupMenuControllerTest extends AbstractTestNGSpringContextTests {
         Integer pageNumber = Integer.parseInt(jPath.getString("data.page_number"));
         String columnName = jPath.getString("data.column_name");
         String sort = jPath.getString("data.sort");
-        String componentFilter = jPath.getString("data.component-filter");
+//        String componentFilter = jPath.getString("data.component-filter");
         Integer numberOfElements = Integer.parseInt(jPath.getString("data.number_of_elements"));
         String value = jPath.getString("data.value");
+        System.out.println("GET ID : "+groupMenu.getId());
+        System.out.println("GET NAME : "+groupMenu.getName());
 
         Assert.assertEquals(responseCode,200);
+//        Assert.assertEquals(id,groupMenu.getId());
+//        Assert.assertEquals(name,groupMenu.getName());
         Assert.assertEquals(status,"200");
         Assert.assertEquals(success,true);
         Assert.assertEquals(message,"PERMINTAAN DATA BERHASIL");
         Assert.assertEquals(pageNumber,0);//karena diset manual seperti itu, untuk automation ada cara nya agar dynamic
         Assert.assertEquals(columnName,null);
         Assert.assertEquals(sort,"desc");
-        Assert.assertEquals(componentFilter,null);
+//        Assert.assertEquals(componentFilter,null);
         Assert.assertEquals(numberOfElements,1);//karena diset manual seperti itu, untuk automation ada cara nya agar dynamic
         Assert.assertEquals(value,null);
     }

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepo extends JpaRepository<User,Long> {
-
+//dasboard.akses.group.menu.apakek
     List<User> findTop1ByUsernameOrNoHpOrEmail(String usr, String noHp, String mail);
 
     /** UNTUK LOGIN PASTI HANYA MENGEMBALIKAN 1, AKAN TETAPI KITA TIDAK TAU SI USER INPUT NOHP,EMAIL ATAUPUN USERNAME */

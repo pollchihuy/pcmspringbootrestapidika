@@ -12,5 +12,4 @@ public class AuthControllerTest extends AbstractTestNGSpringContextTests {
      * tinggal diubah disini saja value AUTH_HEADER nya.....
      */
     public static final String AUTH_HEADER = "Authorization";
-
 }

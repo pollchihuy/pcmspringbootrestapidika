@@ -55,11 +55,12 @@ public class Crypto {
         Long timeMilis = System.currentTimeMillis();
         System.out.println(timeMilis);
 //        String strToEncrypt = "jdbc:mysql://mysqldb:3306/demo?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false";//put text to encrypt in here
-        String strToEncrypt = "89ujiuh";//put text to encrypt in here
+//        String strToEncrypt = "jdbc:mysql://mysqldb:3306/demo?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false";//put text to encrypt in here
+        String strToEncrypt = "jdbc:mysql://mysqldb:3306/demo?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false";//put text to encrypt in here
         String encryptionResult = new Crypto().performEncrypt(strToEncrypt);
         System.out.println("Encryption Result : "+encryptionResult);
 
-        String strToDecrypt = "a77502dc7ecb3fdb0d5ed36d7466a8d16f189e97375513b6408fd512ab3c21411a5b9e7bb20e75dc91ad49732cce3a830e9a79bbb7c808485b4fe3d625678ea5c220d14adb5ed5d2902e1340ca759ae92c0fbb465be0cd1e0ca5165049577098";//put text to decrypt in here
+        String strToDecrypt = "c6dbab470f114a103636f9b69f0f3c2d5757b4813aecbf5d64fa27602d15059c43dc278aef9d5c8033133ac99225ac1136808dc28a2b58b8c71711b0dda276714550ecf55794dd1fb6b49a73a87acef4cef9f8bd6b641aa38f004d71bebaa56036aa6d284eca707bdf0e1874bacc7750";//put text to decrypt in here
         String decriptionResult = new Crypto().performDecrypt(strToDecrypt);
         System.out.println("Decryption Result : "+decriptionResult);
     }
